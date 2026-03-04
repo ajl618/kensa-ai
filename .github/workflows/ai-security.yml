@@ -1,0 +1,163 @@
+name: AI Security Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_pack:
+        description: 'Test pack to run'
+        required: false
+        default: 'basic_security'
+        type: choice
+        options:
+          - ci_quick
+          - basic_security
+          - full_security
+      fail_on:
+        description: 'Fail threshold'
+        required: false
+        default: 'critical'
+        type: choice
+        options:
+          - critical
+          - high
+          - medium
+          - none
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]"
+      
+      - name: Run Ruff
+        run: ruff check src/ tests/
+      
+      - name: Run Black
+        run: black --check src/ tests/
+      
+      - name: Run MyPy
+        run: mypy src/
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]"
+      
+      - name: Run tests
+        run: |
+          pytest tests/ -v --cov=ai_redteam_tester --cov-report=xml
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+
+  redteam-tests:
+    name: AI Red Team Tests
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install -e .
+      
+      - name: Run AI Red Team Tests
+        env:
+          TARGET_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TARGET_URL: https://api.openai.com/v1
+          TARGET_MODEL: gpt-4
+        run: |
+          python -m ai_redteam_tester \
+            --config configs/default.yaml \
+            --pack ${{ inputs.test_pack || 'basic_security' }} \
+            --fail-on ${{ inputs.fail_on || 'critical' }} \
+            --evidence-mode \
+            --output reports/
+      
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: redteam-report-${{ github.run_number }}
+          path: reports/
+          retention-days: 90
+      
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⚠️ AI Red Team Tests detected security issues. Please review the report artifacts.'
+            })
+
+  docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: ai-redteam-tester:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

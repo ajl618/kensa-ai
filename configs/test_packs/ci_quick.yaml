@@ -1,0 +1,19 @@
+# CI Quick Test Pack
+# Minimal tests for fast CI/CD feedback
+
+name: ci_quick
+description: Minimal critical-only tests for CI pipelines
+version: "1.0"
+
+settings:
+  max_tests_per_category: 5
+  severity_threshold: critical
+  timeout_per_test: 15
+
+categories:
+  - prompt_injection
+  - jailbreak
+  - data_leakage
+
+# Only run critical severity tests
+severity_filter: critical

@@ -1,0 +1,23 @@
+# Basic Security Test Pack
+# Quick security validation for CI/CD pipelines
+
+name: basic_security
+description: Essential security tests for quick validation
+version: "1.0"
+
+settings:
+  max_tests_per_category: 10
+  severity_threshold: high
+  timeout_per_test: 30
+
+categories:
+  - prompt_injection
+  - jailbreak
+  - data_leakage
+
+# Override test selection (optional)
+# tests:
+#   - name: direct_ignore_instructions
+#     enabled: true
+#   - name: dan_classic
+#     enabled: true

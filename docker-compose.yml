@@ -1,0 +1,210 @@
+# Kensa-AI (検査-AI) - Docker Compose Configuration
+
+services:
+  # Main Kensa-AI service
+  kensa-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kensa-ai:latest
+    container_name: kensa-ai
+    environment:
+      # Target configuration
+      - TARGET_URL=${TARGET_URL:-http://mock-server:8080/v1/chat/completions}
+      - TARGET_API_KEY=${TARGET_API_KEY:-mock-api-key}
+      - TARGET_TYPE=${TARGET_TYPE:-openai}
+      - TARGET_MODEL=${TARGET_MODEL:-gpt-4}
+      
+      # Test configuration
+      - TEST_PACK=${TEST_PACK:-basic_security}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - EVIDENCE_MODE=${EVIDENCE_MODE:-true}
+      
+      # Output configuration
+      - OUTPUT_FORMAT=${OUTPUT_FORMAT:-json,html}
+      - FAIL_ON=${FAIL_ON:-critical}
+    volumes:
+      - ./configs:/app/configs:ro
+      - ./reports:/app/reports:rw
+      - ./test_packs:/app/test_packs:ro
+    networks:
+      - redteam-net
+    depends_on:
+      - mock-server
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Run unit tests
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kensa-ai:latest
+    container_name: kensa-ai-test
+    command: ["test"]
+    volumes:
+      - ./reports:/app/reports:rw
+    networks:
+      - redteam-net
+
+  # Run demo/examples
+  demo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kensa-ai:latest
+    container_name: kensa-ai-demo
+    command: ["demo"]
+    volumes:
+      - ./reports:/app/reports:rw
+    networks:
+      - redteam-net
+
+  # Validate installation
+  validate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kensa-ai:latest
+    container_name: kensa-ai-validate
+    command: ["validate"]
+    networks:
+      - redteam-net
+
+  # Integration tests with mock server
+  integration-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kensa-ai:latest
+    container_name: kensa-ai-integration
+    command: ["integration"]
+    environment:
+      - TARGET_URL=http://mock-server:8080/v1/chat/completions
+      - TARGET_API_KEY=mock-api-key
+    volumes:
+      - ./reports:/app/reports:rw
+    networks:
+      - redteam-net
+    depends_on:
+      mock-server:
+        condition: service_healthy
+
+  # Mock AI server for testing without real API keys
+  mock-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.mock
+    image: kensa-ai-mock:latest
+    container_name: ai-mock-server
+    ports:
+      - "8080:8080"
+    environment:
+      - MOCK_MODE=${MOCK_MODE:-safe}
+      - PORT=8080
+    networks:
+      - redteam-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  # Optional: Local LLM for testing (Ollama)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-target
+    profiles:
+      - local-llm
+      - ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - redteam-net
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+
+  # Test against Ollama
+  ollama-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kensa-ai:latest
+    container_name: kensa-ai-ollama-test
+    profiles:
+      - ollama
+    command: ["ollama"]
+    environment:
+      - TARGET_URL=http://ollama:11434/api/chat
+      - TARGET_TYPE=ollama
+      - TARGET_MODEL=${OLLAMA_MODEL:-llama3.2:1b}
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./configs:/app/configs:ro
+      - ./reports:/app/reports:rw
+    networks:
+      - redteam-net
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+  # Extended demo with many diverse prompts
+  extended-demo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kensa-ai:latest
+    container_name: kensa-ai-extended-demo
+    profiles:
+      - ollama
+    command: ["python", "-m", "kensa_ai.examples.extended_demo"]
+    environment:
+      - TARGET_URL=http://ollama:11434/api/chat
+      - TARGET_TYPE=ollama
+      - TARGET_MODEL=${OLLAMA_MODEL:-llama3.2:1b}
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./configs:/app/configs:ro
+      - ./reports:/app/reports:rw
+    networks:
+      - redteam-net
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+  # Report viewer (simple HTTP server)
+  report-viewer:
+    image: nginx:alpine
+    container_name: redteam-reports
+    profiles:
+      - viewer
+    ports:
+      - "8081:80"
+    volumes:
+      - ./reports:/usr/share/nginx/html:ro
+    networks:
+      - redteam-net
+
+networks:
+  redteam-net:
+    driver: bridge
+
+volumes:
+  ollama-data:

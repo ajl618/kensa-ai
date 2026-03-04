@@ -1,0 +1,34 @@
+# AI Red Team Tester - Test Configuration
+# For running tests against mock server
+
+target:
+  type: http
+  url: "${TARGET_URL:-http://mock-server:8080}"
+  api_key: "${TARGET_API_KEY:-mock-api-key}"
+  model: "mock-gpt-4"
+  timeout: 30
+  max_retries: 2
+
+test_packs:
+  - basic_security
+
+scoring:
+  threshold: 0.5
+  fail_on:
+    - critical
+    - high
+
+output:
+  formats:
+    - json
+  directory: "./reports"
+  prefix: "test_"
+
+evidence:
+  enabled: true
+  include_raw_response: true
+  include_timestamps: true
+
+logging:
+  level: WARNING
+  format: json

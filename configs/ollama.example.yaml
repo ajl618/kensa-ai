@@ -1,0 +1,61 @@
+# Ollama Configuration Example
+# Use this to test against local Ollama models
+
+target:
+  type: ollama
+  name: "Local Ollama"
+  base_url: "http://localhost:11434"
+  model: "llama3.2:1b"  # Small model for quick testing
+  timeout: 120
+
+# Alternative models (uncomment to use):
+# model: "llama3.2:3b"    # Larger, more capable
+# model: "llama3.1:8b"    # Even more capable
+# model: "mistral:7b"     # Good alternative
+# model: "qwen2.5:7b"     # Chinese/English
+# model: "phi3:mini"      # Microsoft's small model
+
+test_config:
+  # Test packs to run
+  packs:
+    - prompt_injection
+    - jailbreak
+    - data_leakage
+  
+  # Categories to include (or "all")
+  categories:
+    - injection
+    - jailbreak
+    - leakage
+  
+  # Maximum tests per pack
+  max_tests_per_pack: 10
+  
+  # Timeout per request (seconds)
+  timeout: 60
+  
+  # Enable detailed evidence collection
+  evidence_mode: true
+  
+  # Fail threshold
+  fail_on: critical  # critical, high, any
+
+output:
+  format:
+    - json
+    - html
+  
+  report_dir: "./reports"
+  
+  # Include prompts in reports (may be sensitive)
+  include_prompts: true
+  
+  # Include responses in reports
+  include_responses: true
+
+# ISO/IEC 42001 Documentation
+iso_42001:
+  organization: "Your Organization"
+  system_name: "AI Red Team Assessment"
+  assessment_scope: "Local LLM Security Testing"
+  assessor: "Red Team"

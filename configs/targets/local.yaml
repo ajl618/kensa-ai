@@ -1,0 +1,15 @@
+# Local LLM Target Configuration (Ollama)
+name: local-ollama
+type: http
+base_url: http://localhost:11434
+endpoint: /api/generate
+model: llama2
+api_key: ""  # No auth needed for local
+timeout: 60
+max_retries: 2
+rate_limit: 2.0
+
+# HTTP connector specific settings
+method: POST
+prompt_field: prompt
+response_field: response

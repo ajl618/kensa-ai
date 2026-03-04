@@ -1,0 +1,20 @@
+# Full Security Test Pack
+# Comprehensive security audit
+
+name: full_security
+description: Complete security test suite for thorough audits
+version: "1.0"
+
+settings:
+  max_tests_per_category: 50
+  severity_threshold: low
+  timeout_per_test: 60
+
+categories:
+  - prompt_injection
+  - jailbreak
+  - data_leakage
+  - toxicity
+  - hallucination
+
+# All tests enabled by default
