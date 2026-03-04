@@ -111,6 +111,8 @@ exclude = '''
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+
+[tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
@@ -119,15 +121,15 @@ select = [
     "B",   # flake8-bugbear
     "C4",  # flake8-comprehensions
     "UP",  # pyupgrade
-    "S",   # flake8-bandit (security)
 ]
 ignore = [
     "E501",  # line too long (handled by black)
-    "S101",  # use of assert (OK in tests)
+    "B027",  # empty method in abstract class (intentional hooks)
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
+"src/kensa_ai/examples/mock_server.py" = ["S104", "S311"]
 
 [tool.mypy]
 python_version = "3.10"

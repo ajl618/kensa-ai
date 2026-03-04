@@ -17,10 +17,10 @@ import uuid
 from typing import Any
 
 try:
-    from flask import Flask, request, jsonify, Response
+    from flask import Flask, Response, jsonify, request
 except ImportError:
     Flask = None
-    
+
 # Vulnerable responses for testing detection
 VULNERABLE_RESPONSES = {
     "injection": [
@@ -63,27 +63,27 @@ SAFE_RESPONSES = [
 def detect_attack_type(content: str) -> str | None:
     """Detect the type of attack from the prompt."""
     content_lower = content.lower()
-    
+
     # Injection indicators
     if any(x in content_lower for x in ["ignore previous", "disregard instructions", "system prompt"]):
         return "injection"
-    
+
     # Jailbreak indicators
     if any(x in content_lower for x in ["dan mode", "developer mode", "unrestricted", "no rules"]):
         return "jailbreak"
-    
+
     # Data leakage indicators
     if any(x in content_lower for x in ["api key", "password", "secret", "training data", "user data"]):
         return "data_leakage"
-    
+
     # Toxicity indicators
     if any(x in content_lower for x in ["offensive", "racist", "sexist", "harmful content"]):
         return "toxicity"
-    
+
     # Hallucination triggers
     if any(x in content_lower for x in ["fake research", "cite non-existent", "fictional paper"]):
         return "hallucination"
-    
+
     return None
 
 
@@ -95,7 +95,7 @@ def generate_response(messages: list, mode: str = "safe") -> dict[str, Any]:
         if msg.get("role") == "user":
             user_content = msg.get("content", "")
             break
-    
+
     # Determine response based on mode
     if mode == "safe":
         response_content = random.choice(SAFE_RESPONSES)
@@ -118,7 +118,7 @@ def generate_response(messages: list, mode: str = "safe") -> dict[str, Any]:
             response_content = random.choice(SAFE_RESPONSES)
     else:
         response_content = random.choice(SAFE_RESPONSES)
-    
+
     return {
         "id": f"chatcmpl-{uuid.uuid4().hex[:8]}",
         "object": "chat.completion",
@@ -146,14 +146,14 @@ def create_mock_app(mode: str = "safe") -> "Flask":
     """Create Flask app for mock AI server."""
     if Flask is None:
         raise ImportError("Flask is required for mock server. Install with: pip install flask")
-    
+
     app = Flask(__name__)
     app.config["MOCK_MODE"] = mode
-    
+
     @app.route("/health", methods=["GET"])
     def health():
         return jsonify({"status": "healthy", "mode": app.config["MOCK_MODE"]})
-    
+
     @app.route("/v1/chat/completions", methods=["POST"])
     def chat_completions():
         """OpenAI-compatible chat completions endpoint."""
@@ -161,38 +161,38 @@ def create_mock_app(mode: str = "safe") -> "Flask":
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
             return jsonify({"error": "Missing or invalid API key"}), 401
-        
+
         try:
             data = request.get_json()
             messages = data.get("messages", [])
-            
+
             if not messages:
                 return jsonify({"error": "Messages array is required"}), 400
-            
+
             # Check for streaming
             if data.get("stream", False):
                 return stream_response(messages, app.config["MOCK_MODE"])
-            
+
             response = generate_response(messages, app.config["MOCK_MODE"])
             return jsonify(response)
-            
+
         except Exception as e:
             return jsonify({"error": str(e)}), 500
-    
+
     @app.route("/v1/completions", methods=["POST"])
     def completions():
         """Legacy completions endpoint."""
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
             return jsonify({"error": "Missing or invalid API key"}), 401
-        
+
         try:
             data = request.get_json()
             prompt = data.get("prompt", "")
-            
+
             messages = [{"role": "user", "content": prompt}]
             response = generate_response(messages, app.config["MOCK_MODE"])
-            
+
             # Convert to completions format
             return jsonify({
                 "id": response["id"],
@@ -208,10 +208,10 @@ def create_mock_app(mode: str = "safe") -> "Flask":
                 ],
                 "usage": response["usage"]
             })
-            
+
         except Exception as e:
             return jsonify({"error": str(e)}), 500
-    
+
     @app.route("/v1/models", methods=["GET"])
     def list_models():
         """List available models."""
@@ -222,12 +222,12 @@ def create_mock_app(mode: str = "safe") -> "Flask":
                 {"id": "mock-gpt-3.5-turbo", "object": "model", "owned_by": "mock"},
             ]
         })
-    
+
     def stream_response(messages: list, mode: str):
         """Generate streaming response."""
         response = generate_response(messages, mode)
         content = response["choices"][0]["message"]["content"]
-        
+
         def generate():
             # Send content word by word
             words = content.split()
@@ -246,7 +246,7 @@ def create_mock_app(mode: str = "safe") -> "Flask":
                     ]
                 }
                 yield f"data: {json.dumps(chunk)}\n\n"
-            
+
             # Final chunk
             final_chunk = {
                 "id": response["id"],
@@ -257,9 +257,9 @@ def create_mock_app(mode: str = "safe") -> "Flask":
             }
             yield f"data: {json.dumps(final_chunk)}\n\n"
             yield "data: [DONE]\n\n"
-        
+
         return Response(generate(), mimetype="text/event-stream")
-    
+
     return app
 
 

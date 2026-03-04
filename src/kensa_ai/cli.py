@@ -5,7 +5,6 @@ Command-line interface for Kensa-AI.
 import asyncio
 import sys
 from pathlib import Path
-from typing import Optional
 
 import click
 from rich.console import Console
@@ -15,19 +14,18 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from kensa_ai import __version__
 from kensa_ai.core.config import Config
 from kensa_ai.core.runner import Runner
-from kensa_ai.reports import JSONReporter, HTMLReporter
 
 console = Console()
 
 
 def print_banner() -> None:
     """Print the application banner."""
-    banner = """
+    banner = f"""
 ╔═══════════════════════════════════════════════════════════╗
-║          Kensa-AI v{version}                    ║
+║          Kensa-AI v{__version__}                    ║
 ║     ISO/IEC 42001-friendly Adversarial Testing            ║
 ╚═══════════════════════════════════════════════════════════╝
-    """.format(version=__version__)
+    """
     console.print(Panel(banner, style="bold blue"))
 
 
@@ -95,10 +93,10 @@ def print_banner() -> None:
 @click.pass_context
 def main(
     ctx: click.Context,
-    config: Optional[Path],
+    config: Path | None,
     target: str,
     pack: str,
-    categories: Optional[str],
+    categories: str | None,
     output: Path,
     format: str,
     evidence_mode: bool,
@@ -108,10 +106,10 @@ def main(
 ) -> int:
     """
     Kensa-AI - Adversarial testing for AI systems.
-    
+
     Run security tests against AI model endpoints to identify vulnerabilities
     like prompt injection, jailbreaks, and data leakage.
-    
+
     \b
     Examples:
       ai-redteam-test --target openai --pack basic_security
@@ -120,23 +118,23 @@ def main(
     """
     if ctx.invoked_subcommand is not None:
         return 0
-    
+
     print_banner()
-    
+
     # Parse categories
     category_list = None
     if categories:
         category_list = [c.strip() for c in categories.split(",")]
-    
+
     # Parse output formats
     output_formats = [f.strip() for f in format.split(",")]
-    
+
     # Load or create configuration
     if config:
         cfg = Config.from_file(config)
     else:
         cfg = Config.default()
-    
+
     # Override config with CLI options
     cfg.target_type = target
     cfg.test_pack = pack
@@ -146,7 +144,7 @@ def main(
     cfg.evidence_mode = evidence_mode
     cfg.fail_on = fail_on
     cfg.verbose = verbose
-    
+
     if dry_run:
         console.print("\n[yellow]DRY RUN MODE[/yellow]\n")
         console.print(f"Target: {target}")
@@ -155,7 +153,7 @@ def main(
         console.print(f"Output: {output}")
         console.print(f"Evidence Mode: {evidence_mode}")
         return 0
-    
+
     # Run tests
     try:
         result = asyncio.run(run_tests(cfg, verbose))
@@ -174,7 +172,7 @@ def main(
 async def run_tests(config: Config, verbose: bool) -> int:
     """Execute the test run."""
     runner = Runner(config)
-    
+
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -183,35 +181,35 @@ async def run_tests(config: Config, verbose: bool) -> int:
         # Initialize
         task = progress.add_task("Initializing...", total=None)
         await runner.initialize()
-        
+
         # Load test pack
         progress.update(task, description="Loading test pack...")
         test_count = await runner.load_test_pack()
         console.print(f"[green]Loaded {test_count} tests[/green]")
-        
+
         # Run tests
         progress.update(task, description="Running tests...")
         results = await runner.run()
-        
+
         # Generate reports
         progress.update(task, description="Generating reports...")
         await runner.generate_reports()
-        
+
         progress.update(task, description="Done!")
-    
+
     # Print summary
     print_summary(results)
-    
+
     # Determine exit code
     exit_code = determine_exit_code(results, config.fail_on)
-    
+
     return exit_code
 
 
 def print_summary(results: dict) -> None:
     """Print test results summary."""
     summary = results.get("summary", {})
-    
+
     console.print("\n")
     console.print(Panel("[bold]Test Results Summary[/bold]", style="blue"))
     console.print(f"  Total Tests: {summary.get('total_tests', 0)}")
@@ -219,7 +217,7 @@ def print_summary(results: dict) -> None:
     console.print(f"  [red]Failed: {summary.get('failed', 0)}[/red]")
     console.print(f"  Score: {summary.get('score', 0):.1%}")
     console.print()
-    
+
     # Severity breakdown
     severities = summary.get("by_severity", {})
     if severities:
@@ -240,16 +238,16 @@ def determine_exit_code(results: dict, fail_on: str) -> int:
     """Determine exit code based on results and fail_on threshold."""
     if fail_on == "none":
         return 0
-    
+
     severity_order = ["critical", "high", "medium", "low"]
     threshold_index = severity_order.index(fail_on)
-    
+
     severities = results.get("summary", {}).get("by_severity", {})
-    
+
     for i, sev in enumerate(severity_order):
         if i <= threshold_index and severities.get(sev, 0) > 0:
             return 1
-    
+
     return 0
 
 
@@ -264,7 +262,7 @@ def validate_target(target: str) -> None:
 
 @main.command()
 @click.option("--pack", "-p", type=str, default=None, help="Test pack to list")
-def list_tests(pack: Optional[str]) -> None:
+def list_tests(pack: str | None) -> None:
     """List available tests or test packs."""
     console.print("[bold]Available Test Packs:[/bold]")
     packs = [
@@ -276,7 +274,7 @@ def list_tests(pack: Optional[str]) -> None:
         ("toxicity", "Toxicity and harmful content tests"),
         ("hallucination", "Hallucination and grounding tests"),
     ]
-    
+
     for name, description in packs:
         console.print(f"  [cyan]{name}[/cyan]: {description}")
 
@@ -286,10 +284,10 @@ def list_tests(pack: Optional[str]) -> None:
 def show_report(report_path: Path) -> None:
     """Display a previously generated report."""
     import json
-    
+
     with open(report_path) as f:
         report = json.load(f)
-    
+
     print_summary(report)
 
 

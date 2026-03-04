@@ -8,7 +8,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://hub.docker.com/r/jimlu/kensa-ai)
+[![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://hub.docker.com/r/ajjl618/kensa-ai)
 [![CI](https://img.shields.io/github/actions/workflow/status/ajl618/kensa-ai/ci.yml?branch=main&label=CI)](https://github.com/ajl618/kensa-ai/actions)
 [![codecov](https://img.shields.io/codecov/c/github/ajl618/kensa-ai)](https://codecov.io/gh/ajl618/kensa-ai)
 [![Docker Pulls](https://img.shields.io/docker/pulls/ajl618/kensa-ai)](https://hub.docker.com/r/ajl618/kensa-ai)

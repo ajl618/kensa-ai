@@ -8,8 +8,8 @@ Inspect, test, and validate AI model security with adversarial prompts.
 __version__ = "0.1.0"
 __author__ = "Kensa-AI Team"
 
-from kensa_ai.core.runner import Runner
 from kensa_ai.core.config import Config
+from kensa_ai.core.runner import Runner
 from kensa_ai.core.test_case import TestCase, TestResult
 
 __all__ = [

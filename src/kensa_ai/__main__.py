@@ -3,6 +3,7 @@ Main entry point for Kensa-AI.
 """
 
 import sys
+
 from kensa_ai.cli import main
 
 if __name__ == "__main__":

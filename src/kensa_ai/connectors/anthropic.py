@@ -2,7 +2,7 @@
 Anthropic connector for Kensa-AI.
 """
 
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -14,13 +14,13 @@ class AnthropicConnector(BaseConnector):
     """
     Connector for Anthropic Claude API.
     """
-    
+
     ANTHROPIC_API_URL = "https://api.anthropic.com"
     ANTHROPIC_VERSION = "2023-06-01"
-    
+
     def __init__(self, config: Any):
         super().__init__(config)
-        
+
         self.base_url = getattr(config, "base_url", self.ANTHROPIC_API_URL)
         self.api_key = getattr(config, "api_key", "")
         self.model = getattr(config, "model", "claude-3-sonnet-20240229")
@@ -28,7 +28,7 @@ class AnthropicConnector(BaseConnector):
         self.max_retries = getattr(config, "max_retries", 3)
         self.temperature = getattr(config, "temperature", 0.0)
         self.max_tokens = getattr(config, "max_tokens", 1024)
-        
+
         self.client = httpx.AsyncClient(
             base_url=self.base_url,
             headers={
@@ -38,7 +38,7 @@ class AnthropicConnector(BaseConnector):
             },
             timeout=self.timeout,
         )
-    
+
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=1, max=10),
@@ -46,7 +46,7 @@ class AnthropicConnector(BaseConnector):
     async def send_prompt(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         **kwargs: Any,
     ) -> str:
         """Send a prompt to the Anthropic API."""
@@ -56,48 +56,48 @@ class AnthropicConnector(BaseConnector):
                 "content": prompt,
             }
         ]
-        
+
         payload = {
             "model": kwargs.get("model", self.model),
             "messages": messages,
             "max_tokens": kwargs.get("max_tokens", self.max_tokens),
         }
-        
+
         if system_prompt:
             payload["system"] = system_prompt
-        
+
         if self.temperature > 0:
             payload["temperature"] = kwargs.get("temperature", self.temperature)
-        
+
         self._logger.debug(
             "Sending request",
             model=payload["model"],
             prompt_length=len(prompt),
         )
-        
+
         response = await self.client.post(
             "/v1/messages",
             json=payload,
         )
         response.raise_for_status()
-        
+
         data = response.json()
-        
+
         # Extract response text from content blocks
         content_blocks = data.get("content", [])
         content = ""
         for block in content_blocks:
             if block.get("type") == "text":
                 content += block.get("text", "")
-        
+
         self._logger.debug(
             "Received response",
             response_length=len(content),
             usage=data.get("usage"),
         )
-        
+
         return content
-    
+
     async def validate(self) -> bool:
         """Validate connection to Anthropic API."""
         try:
@@ -117,7 +117,7 @@ class AnthropicConnector(BaseConnector):
             raise ConnectionError(f"API validation failed: {e}") from e
         except httpx.RequestError as e:
             raise ConnectionError(f"Connection failed: {e}") from e
-    
+
     async def close(self) -> None:
         """Close the HTTP client."""
         await self.client.aclose()
