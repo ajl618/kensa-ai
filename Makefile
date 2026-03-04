@@ -191,12 +191,12 @@ docker-login:
 	docker login
 
 docker-tag:
-	docker tag kensa-ai:latest jimlu/kensa-ai:latest
-	docker tag kensa-ai:latest jimlu/kensa-ai:0.1.0
+	docker tag kensa-ai:latest ajjl618/kensa-ai:latest
+	docker tag kensa-ai:latest ajjl618/kensa-ai:0.1.0
 
 docker-push: docker-tag
-	docker push jimlu/kensa-ai:latest
-	docker push jimlu/kensa-ai:0.1.0
+	docker push ajjl618/kensa-ai:latest
+	docker push ajjl618/kensa-ai:0.1.0
 
 publish: build docker-push
 	@echo "Published to Docker Hub!"

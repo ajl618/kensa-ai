@@ -9,11 +9,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://hub.docker.com/r/jimlu/kensa-ai)
-[![CI](https://img.shields.io/github/actions/workflow/status/jimlu/kensa-ai/ci.yml?branch=main&label=CI)](https://github.com/jimlu/kensa-ai/actions)
-[![codecov](https://img.shields.io/codecov/c/github/jimlu/kensa-ai)](https://codecov.io/gh/jimlu/kensa-ai)
-[![Docker Pulls](https://img.shields.io/docker/pulls/jimlu/kensa-ai)](https://hub.docker.com/r/jimlu/kensa-ai)
+[![CI](https://img.shields.io/github/actions/workflow/status/ajjl618/kensa-ai/ci.yml?branch=main&label=CI)](https://github.com/ajjl618/kensa-ai/actions)
+[![codecov](https://img.shields.io/codecov/c/github/ajjl618/kensa-ai)](https://codecov.io/gh/ajjl618/kensa-ai)
+[![Docker Pulls](https://img.shields.io/docker/pulls/ajjl618/kensa-ai)](https://hub.docker.com/r/ajjl618/kensa-ai)
 
-[📖 Documentation](docs/) · [🐛 Report Bug](https://github.com/jimlu/kensa-ai/issues) · [✨ Request Feature](https://github.com/jimlu/kensa-ai/issues)
+[📖 Documentation](docs/) · [🐛 Report Bug](https://github.com/ajjl618/kensa-ai/issues) · [✨ Request Feature](https://github.com/ajjl618/kensa-ai/issues)
 
 </div>
 
@@ -23,7 +23,7 @@
 
 ```bash
 # Clone and run
-git clone https://github.com/jimlu/kensa-ai.git
+git clone https://github.com/ajjl618/kensa-ai.git
 cd kensa-ai
 
 # Option 1: Run with Make (easiest)

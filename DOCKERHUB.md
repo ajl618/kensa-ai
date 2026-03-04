@@ -9,7 +9,7 @@ AI Security Testing Toolkit with ISO/IEC 42001 Alignment
 docker run --rm \
   -e TARGET_API_KEY=$OPENAI_API_KEY \
   -v $(pwd)/reports:/app/reports \
-  jimlu/kensa-ai:latest
+  ajjl618/kensa-ai:latest
 
 # Test against local Ollama
 docker run --rm \
@@ -18,7 +18,7 @@ docker run --rm \
   -e TARGET_TYPE=ollama \
   -e TARGET_MODEL=llama3.2 \
   -v $(pwd)/reports:/app/reports \
-  jimlu/kensa-ai:latest
+  ajjl618/kensa-ai:latest
 ```
 
 ## What It Tests
@@ -49,9 +49,9 @@ docker run --rm \
 
 ## Links
 
-- **GitHub**: https://github.com/jimlu/kensa-ai
-- **Documentation**: https://github.com/jimlu/kensa-ai#readme
-- **Issues**: https://github.com/jimlu/kensa-ai/issues
+- **GitHub**: https://github.com/ajjl618/kensa-ai
+- **Documentation**: https://github.com/ajjl618/kensa-ai#readme
+- **Issues**: https://github.com/ajjl618/kensa-ai/issues
 
 ## License
 
