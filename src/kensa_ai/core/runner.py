@@ -109,7 +109,7 @@ class Runner:
         self.start_time = datetime.now(timezone.utc)
         self._logger.info("Starting test run", test_count=len(self.tests))
 
-        results = []
+        results: list[dict[str, Any]] = []
 
         for i, test in enumerate(self.tests, 1):
             self._logger.debug(
@@ -165,6 +165,7 @@ class Runner:
         start_time = time.perf_counter()
 
         # Send to target
+        assert self.connector is not None, "Runner not initialized. Call initialize() first."
         response = await self.connector.send_prompt(
             prompt=prompt,
             system_prompt=system_prompt,
@@ -269,15 +270,15 @@ class Runner:
 
         if "json" in self.config.output_formats:
             json_path = self.config.output_dir / f"{base_name}.json"
-            reporter = JSONReporter()
-            reporter.generate(self.results, json_path)
+            json_reporter = JSONReporter()
+            json_reporter.generate(self.results, json_path)
             generated.append(json_path)
             self._logger.info("Generated JSON report", path=str(json_path))
 
         if "html" in self.config.output_formats:
             html_path = self.config.output_dir / f"{base_name}.html"
-            reporter = HTMLReporter()
-            reporter.generate(self.results, html_path)
+            html_reporter = HTMLReporter()
+            html_reporter.generate(self.results, html_path)
             generated.append(html_path)
             self._logger.info("Generated HTML report", path=str(html_path))
 

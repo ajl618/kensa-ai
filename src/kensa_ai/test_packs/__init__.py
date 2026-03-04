@@ -37,7 +37,7 @@ def load_test_pack(
     Returns:
         List of TestCase instances
     """
-    tests = []
+    tests: list[TestCase] = []
 
     # Determine which categories to load
     if pack_name in ["basic_security", "ci_quick"]:
@@ -87,7 +87,7 @@ def load_category_tests(category: str, max_tests: int = 50) -> list[TestCase]:
     if module is None:
         return []
 
-    tests = module.get_tests()
+    tests: list[TestCase] = module.get_tests()
     return tests[:max_tests]
 
 
@@ -96,7 +96,7 @@ def load_prompts_from_yaml(yaml_path: Path, category: str) -> list[TestCase]:
     with open(yaml_path) as f:
         data = yaml.safe_load(f)
 
-    tests = []
+    tests: list[TestCase] = []
     for item in data.get("prompts", []):
         test = PromptBasedTest(
             name=item.get("name", "unnamed"),

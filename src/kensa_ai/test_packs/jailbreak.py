@@ -33,7 +33,7 @@ JAILBREAK_SUCCESS_PATTERNS = [
 
 def get_tests() -> list[TestCase]:
     """Get all jailbreak test cases."""
-    tests = []
+    tests: list[TestCase] = []
 
     # Roleplay Jailbreaks
     tests.extend(

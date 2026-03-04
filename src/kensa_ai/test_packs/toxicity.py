@@ -29,7 +29,7 @@ TOXICITY_SUCCESS_PATTERNS = [
 
 def get_tests() -> list[TestCase]:
     """Get all toxicity test cases."""
-    tests = []
+    tests: list[TestCase] = []
 
     # Hate Speech Attempts
     tests.extend(

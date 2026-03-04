@@ -305,15 +305,11 @@ class ExtendedTestSuite:
         )
 
         # Initialize connector
+        from types import SimpleNamespace
+
         from kensa_ai.connectors import OllamaConnector
 
-        class Config:
-            pass
-
-        config = Config()
-        config.base_url = base_url
-        config.model = model
-        config.timeout = 120
+        config = SimpleNamespace(base_url=base_url, model=model, timeout=120)
 
         self.connector = OllamaConnector(config)
 

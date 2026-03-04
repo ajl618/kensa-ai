@@ -409,7 +409,7 @@ class HTMLReporter:
 </html>
 """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the HTML reporter."""
         self.template = Template(self.HTML_TEMPLATE)
 

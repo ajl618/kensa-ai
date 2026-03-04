@@ -19,7 +19,7 @@ from typing import Any
 try:
     from flask import Flask, Response, jsonify, request
 except ImportError:
-    Flask = None
+    Flask = None  # type: ignore[misc, assignment]
 
 # Vulnerable responses for testing detection
 VULNERABLE_RESPONSES = {

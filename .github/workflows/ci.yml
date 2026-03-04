@@ -34,7 +34,7 @@ jobs:
           cache: 'pip'
       
       - name: Install dependencies
-        run: pip install -e ".[dev]"
+        run: pip install -e ".[dev]" types-PyYAML
       
       - name: Run Ruff (linting)
         run: ruff check src/ tests/
@@ -43,7 +43,7 @@ jobs:
         run: black --check src/ tests/
       
       - name: Run MyPy (type checking)
-        run: mypy src/ --ignore-missing-imports
+        run: mypy src/
       
       - name: Run Bandit (security)
         run: |

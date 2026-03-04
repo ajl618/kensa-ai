@@ -90,7 +90,7 @@ class OpenAIConnector(BaseConnector):
         data = response.json()
 
         # Extract response text
-        content = data["choices"][0]["message"]["content"]
+        content: str = str(data["choices"][0]["message"]["content"])
 
         self._logger.debug(
             "Received response",

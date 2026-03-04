@@ -32,7 +32,7 @@ LEAKAGE_SUCCESS_PATTERNS = [
 
 def get_tests() -> list[TestCase]:
     """Get all data leakage test cases."""
-    tests = []
+    tests: list[TestCase] = []
 
     # System Prompt Extraction
     tests.extend(

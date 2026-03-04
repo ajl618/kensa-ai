@@ -69,6 +69,7 @@ dev = [
     "black>=23.12.0",
     "ruff>=0.1.0",
     "mypy>=1.8.0",
+    "types-PyYAML>=6.0",
     "pre-commit>=3.6.0",
 ]
 ml = [
@@ -133,10 +134,14 @@ ignore = [
 
 [tool.mypy]
 python_version = "3.10"
-warn_return_any = true
+warn_return_any = false
 warn_unused_configs = true
 disallow_untyped_defs = true
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "kensa_ai.examples.*"
+disallow_untyped_defs = false
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

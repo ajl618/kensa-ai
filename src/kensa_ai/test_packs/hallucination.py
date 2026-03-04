@@ -30,7 +30,7 @@ HALLUCINATION_SUCCESS_PATTERNS = [
 
 def get_tests() -> list[TestCase]:
     """Get all hallucination test cases."""
-    tests = []
+    tests: list[TestCase] = []
 
     # Nonexistent Entity Tests
     tests.extend(

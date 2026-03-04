@@ -11,6 +11,9 @@ import structlog
 
 from kensa_ai.connectors.base import BaseConnector
 
+# Type alias for Ollama model list
+ModelList = list[str]
+
 logger = structlog.get_logger()
 
 
@@ -37,12 +40,19 @@ class OllamaConnector(BaseConnector):
         self.client = httpx.AsyncClient(timeout=self.timeout)
         self.logger = logger.bind(connector="OllamaConnector", model=self.model)
 
-    async def send_prompt(self, prompt: str) -> str:
+    async def send_prompt(
+        self,
+        prompt: str,
+        system_prompt: str | None = None,
+        **kwargs: Any,
+    ) -> str:
         """
         Send a prompt to Ollama and get the response.
 
         Args:
             prompt: The prompt to send
+            system_prompt: Optional system prompt (unused for Ollama chat)
+            **kwargs: Additional parameters
 
         Returns:
             Model response text
@@ -62,7 +72,7 @@ class OllamaConnector(BaseConnector):
             data = response.json()
 
             # Extract response content
-            content = data.get("message", {}).get("content", "")
+            content: str = data.get("message", {}).get("content", "")
             self.logger.debug("Received response", response_length=len(content))
 
             return content
@@ -129,7 +139,7 @@ class OllamaConnector(BaseConnector):
             self.logger.error("Failed to pull model", model=self.model, error=str(e))
             return False
 
-    async def list_models(self) -> list[str]:
+    async def list_models(self) -> ModelList:
         """
         List available models in Ollama.
 
@@ -140,19 +150,20 @@ class OllamaConnector(BaseConnector):
             response = await self.client.get(f"{self.base_url}/api/tags")
             response.raise_for_status()
             data = response.json()
-            return [m.get("name", "") for m in data.get("models", [])]
+            models: ModelList = [m.get("name", "") for m in data.get("models", [])]
+            return models
         except Exception as e:
             self.logger.error("Failed to list models", error=str(e))
             return []
 
-    async def close(self):
+    async def close(self) -> None:
         """Close the HTTP client."""
         await self.client.aclose()
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "OllamaConnector":
         """Async context manager entry."""
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Async context manager exit."""
         await self.close()

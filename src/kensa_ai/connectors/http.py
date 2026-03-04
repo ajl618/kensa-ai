@@ -118,20 +118,20 @@ class HTTPConnector(BaseConnector):
         if "choices" in data:
             choices = data["choices"]
             if choices and "message" in choices[0]:
-                return choices[0]["message"].get("content", "")
+                return str(choices[0]["message"].get("content", ""))
             if choices and "text" in choices[0]:
-                return choices[0]["text"]
+                return str(choices[0]["text"])
 
         # Handle nested response field (e.g., "data.response")
         if "." in self.response_field:
             parts = self.response_field.split(".")
-            result = data
+            result: Any = data
             for part in parts:
                 result = result.get(part, {})
             return str(result) if result else ""
 
         # Simple key access
-        return data.get(self.response_field, data.get("response", str(data)))
+        return str(data.get(self.response_field, data.get("response", str(data))))
 
     async def validate(self) -> bool:
         """Validate connection to the HTTP endpoint."""

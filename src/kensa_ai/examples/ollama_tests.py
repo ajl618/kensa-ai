@@ -8,6 +8,7 @@ import asyncio
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from rich.console import Console
 from rich.panel import Panel
@@ -261,15 +262,11 @@ class OllamaTestSuite:
             return False
 
         # Initialize connector
+        from types import SimpleNamespace
+
         from kensa_ai.connectors import OllamaConnector
 
-        class Config:
-            pass
-
-        config = Config()
-        config.base_url = base_url
-        config.model = model
-        config.timeout = 120
+        config = SimpleNamespace(base_url=base_url, model=model, timeout=120)
 
         self.connector = OllamaConnector(config)
 
@@ -371,12 +368,12 @@ class OllamaTestSuite:
         }
 
         # Count by severity
-        for r in report_data["results"]:
+        results_list: list[dict[str, Any]] = report_data["results"]  # type: ignore[assignment]
+        for r in results_list:
             if r["status"] == "failed":
                 sev = r["test"]["severity"]
-                report_data["summary"]["by_severity"][sev] = (
-                    report_data["summary"]["by_severity"].get(sev, 0) + 1
-                )
+                summary: dict[str, Any] = report_data["summary"]  # type: ignore[assignment]
+                summary["by_severity"][sev] = summary["by_severity"].get(sev, 0) + 1
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 

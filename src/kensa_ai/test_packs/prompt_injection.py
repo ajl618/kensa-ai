@@ -27,7 +27,7 @@ INJECTION_SUCCESS_PATTERNS = [
 
 def get_tests() -> list[TestCase]:
     """Get all prompt injection test cases."""
-    tests = []
+    tests: list[TestCase] = []
 
     # Direct Injection Tests
     tests.extend(

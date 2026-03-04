@@ -2,6 +2,8 @@
 Target connectors for Kensa-AI.
 """
 
+from typing import Any
+
 from kensa_ai.connectors.anthropic import AnthropicConnector
 from kensa_ai.connectors.base import BaseConnector
 from kensa_ai.connectors.http import HTTPConnector
@@ -9,7 +11,7 @@ from kensa_ai.connectors.ollama import OllamaConnector
 from kensa_ai.connectors.openai import OpenAIConnector
 
 
-def get_connector(connector_type: str, config) -> BaseConnector:
+def get_connector(connector_type: str, config: Any) -> BaseConnector:
     """
     Factory function to get the appropriate connector.
 
@@ -20,7 +22,7 @@ def get_connector(connector_type: str, config) -> BaseConnector:
     Returns:
         Configured connector instance
     """
-    connectors = {
+    connectors: dict[str, type[BaseConnector]] = {
         "openai": OpenAIConnector,
         "anthropic": AnthropicConnector,
         "http": HTTPConnector,
