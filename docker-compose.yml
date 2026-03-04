@@ -165,6 +165,27 @@ services:
       ollama:
         condition: service_healthy
 
+  # LLM-as-Judge demo (compares regex vs LLM judge accuracy)
+  judge-demo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kensa-ai:latest
+    container_name: kensa-ai-judge-demo
+    profiles:
+      - ollama
+    entrypoint: python
+    command: ["-m", "kensa_ai.examples.judge_demo", "--base-url=http://ollama:11434", "--model=${OLLAMA_MODEL:-llama3.2:1b}"]
+    environment:
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./reports:/app/reports:rw
+    networks:
+      - redteam-net
+    depends_on:
+      ollama:
+        condition: service_healthy
+
   # Extended demo with many diverse prompts
   extended-demo:
     build:
