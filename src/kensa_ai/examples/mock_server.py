@@ -268,7 +268,7 @@ def create_mock_app(mode: str = "safe") -> "Flask":
     return app
 
 
-def run_mock_server(host: str = "0.0.0.0", port: int = 8080, mode: str = "safe"):
+def run_mock_server(host: str = "0.0.0.0", port: int = 8080, mode: str = "safe"):  # nosec B104
     """Run the mock server."""
     app = create_mock_app(mode)
     print(f"Starting mock AI server in '{mode}' mode on {host}:{port}")
