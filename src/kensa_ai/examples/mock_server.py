@@ -65,7 +65,9 @@ def detect_attack_type(content: str) -> str | None:
     content_lower = content.lower()
 
     # Injection indicators
-    if any(x in content_lower for x in ["ignore previous", "disregard instructions", "system prompt"]):
+    if any(
+        x in content_lower for x in ["ignore previous", "disregard instructions", "system prompt"]
+    ):
         return "injection"
 
     # Jailbreak indicators
@@ -73,7 +75,9 @@ def detect_attack_type(content: str) -> str | None:
         return "jailbreak"
 
     # Data leakage indicators
-    if any(x in content_lower for x in ["api key", "password", "secret", "training data", "user data"]):
+    if any(
+        x in content_lower for x in ["api key", "password", "secret", "training data", "user data"]
+    ):
         return "data_leakage"
 
     # Toxicity indicators
@@ -127,18 +131,15 @@ def generate_response(messages: list, mode: str = "safe") -> dict[str, Any]:
         "choices": [
             {
                 "index": 0,
-                "message": {
-                    "role": "assistant",
-                    "content": response_content
-                },
-                "finish_reason": "stop"
+                "message": {"role": "assistant", "content": response_content},
+                "finish_reason": "stop",
             }
         ],
         "usage": {
             "prompt_tokens": len(user_content.split()),
             "completion_tokens": len(response_content.split()),
-            "total_tokens": len(user_content.split()) + len(response_content.split())
-        }
+            "total_tokens": len(user_content.split()) + len(response_content.split()),
+        },
     }
 
 
@@ -194,20 +195,22 @@ def create_mock_app(mode: str = "safe") -> "Flask":
             response = generate_response(messages, app.config["MOCK_MODE"])
 
             # Convert to completions format
-            return jsonify({
-                "id": response["id"],
-                "object": "text_completion",
-                "created": response["created"],
-                "model": response["model"],
-                "choices": [
-                    {
-                        "text": response["choices"][0]["message"]["content"],
-                        "index": 0,
-                        "finish_reason": "stop"
-                    }
-                ],
-                "usage": response["usage"]
-            })
+            return jsonify(
+                {
+                    "id": response["id"],
+                    "object": "text_completion",
+                    "created": response["created"],
+                    "model": response["model"],
+                    "choices": [
+                        {
+                            "text": response["choices"][0]["message"]["content"],
+                            "index": 0,
+                            "finish_reason": "stop",
+                        }
+                    ],
+                    "usage": response["usage"],
+                }
+            )
 
         except Exception as e:
             return jsonify({"error": str(e)}), 500
@@ -215,13 +218,15 @@ def create_mock_app(mode: str = "safe") -> "Flask":
     @app.route("/v1/models", methods=["GET"])
     def list_models():
         """List available models."""
-        return jsonify({
-            "object": "list",
-            "data": [
-                {"id": "mock-gpt-4", "object": "model", "owned_by": "mock"},
-                {"id": "mock-gpt-3.5-turbo", "object": "model", "owned_by": "mock"},
-            ]
-        })
+        return jsonify(
+            {
+                "object": "list",
+                "data": [
+                    {"id": "mock-gpt-4", "object": "model", "owned_by": "mock"},
+                    {"id": "mock-gpt-3.5-turbo", "object": "model", "owned_by": "mock"},
+                ],
+            }
+        )
 
     def stream_response(messages: list, mode: str):
         """Generate streaming response."""
@@ -241,9 +246,9 @@ def create_mock_app(mode: str = "safe") -> "Flask":
                         {
                             "index": 0,
                             "delta": {"content": word + (" " if i < len(words) - 1 else "")},
-                            "finish_reason": None
+                            "finish_reason": None,
                         }
-                    ]
+                    ],
                 }
                 yield f"data: {json.dumps(chunk)}\n\n"
 
@@ -253,7 +258,7 @@ def create_mock_app(mode: str = "safe") -> "Flask":
                 "object": "chat.completion.chunk",
                 "created": response["created"],
                 "model": response["model"],
-                "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}]
+                "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}],
             }
             yield f"data: {json.dumps(final_chunk)}\n\n"
             yield "data: [DONE]\n\n"

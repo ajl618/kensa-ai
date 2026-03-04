@@ -11,7 +11,7 @@
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://hub.docker.com/r/ajjl618/kensa-ai)
 [![CI](https://img.shields.io/github/actions/workflow/status/ajl618/kensa-ai/ci.yml?branch=main&label=CI)](https://github.com/ajl618/kensa-ai/actions)
 [![codecov](https://img.shields.io/codecov/c/github/ajl618/kensa-ai)](https://codecov.io/gh/ajl618/kensa-ai)
-[![Docker Pulls](https://img.shields.io/docker/pulls/ajl618/kensa-ai)](https://hub.docker.com/r/ajl618/kensa-ai)
+[![Docker Pulls](https://img.shields.io/docker/pulls/ajjl618/kensa-ai)](https://hub.docker.com/r/ajjl618/kensa-ai)
 
 [📖 Documentation](docs/) · [🐛 Report Bug](https://github.com/ajl618/kensa-ai/issues) · [✨ Request Feature](https://github.com/ajl618/kensa-ai/issues)
 

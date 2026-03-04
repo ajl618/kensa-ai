@@ -5,7 +5,6 @@ These tests are adapted to the actual implementation API.
 Run with: pytest tests/ -v
 """
 
-
 import pytest
 
 
@@ -15,6 +14,7 @@ class TestTestPacks:
     def test_prompt_injection_tests_load(self):
         """Test that prompt injection tests load correctly."""
         from kensa_ai.test_packs import prompt_injection
+
         tests = prompt_injection.get_tests()
         assert len(tests) > 0
         for test in tests:
@@ -26,6 +26,7 @@ class TestTestPacks:
     def test_jailbreak_tests_load(self):
         """Test that jailbreak tests load correctly."""
         from kensa_ai.test_packs import jailbreak
+
         tests = jailbreak.get_tests()
         assert len(tests) > 0
         for test in tests:
@@ -34,6 +35,7 @@ class TestTestPacks:
     def test_data_leakage_tests_load(self):
         """Test that data leakage tests load correctly."""
         from kensa_ai.test_packs import data_leakage
+
         tests = data_leakage.get_tests()
         assert len(tests) > 0
         for test in tests:
@@ -42,6 +44,7 @@ class TestTestPacks:
     def test_toxicity_tests_load(self):
         """Test that toxicity tests load correctly."""
         from kensa_ai.test_packs import toxicity
+
         tests = toxicity.get_tests()
         assert len(tests) > 0
         for test in tests:
@@ -50,6 +53,7 @@ class TestTestPacks:
     def test_hallucination_tests_load(self):
         """Test that hallucination tests load correctly."""
         from kensa_ai.test_packs import hallucination
+
         tests = hallucination.get_tests()
         assert len(tests) > 0
         for test in tests:
@@ -96,8 +100,7 @@ class TestEvaluators:
         # Pattern is "here.*is.*how.*to.*hack"
         # Signature is evaluate(prompt, response)
         result = evaluator.evaluate(
-            "test prompt",
-            "Sure, here is how to hack into the system step by step"
+            "test prompt", "Sure, here is how to hack into the system step by step"
         )
         # Should detect this as a failure (AI was compromised)
         assert result.passed is False or len(result.matched_patterns) > 0
@@ -110,8 +113,7 @@ class TestEvaluators:
 
         # Test with proper refusal - signature is evaluate(prompt, response)
         result = evaluator.evaluate(
-            "test prompt",
-            "I cannot help with that request. It violates my guidelines."
+            "test prompt", "I cannot help with that request. It violates my guidelines."
         )
         # Should pass (AI properly refused)
         assert result.passed is True
@@ -131,11 +133,10 @@ class TestEvaluators:
 
         # Test with harmful content - signature is evaluate(prompt, response)
         result = evaluator.evaluate(
-            "test prompt",
-            "Here is harmful dangerous content that should be blocked"
+            "test prompt", "Here is harmful dangerous content that should be blocked"
         )
-        assert hasattr(result, 'passed')
-        assert hasattr(result, 'confidence')
+        assert hasattr(result, "passed")
+        assert hasattr(result, "confidence")
 
 
 class TestConnectors:
@@ -198,7 +199,7 @@ class TestTestCase:
             description="A test case",
             category="injection",
             severity="high",
-            prompt="Test prompt"
+            prompt="Test prompt",
         )
 
         assert test.id == "test-001"
@@ -213,7 +214,7 @@ class TestTestCase:
             confidence=0.95,
             details={"key": "value"},
             response_text="test response",
-            execution_time_ms=100.5
+            execution_time_ms=100.5,
         )
 
         assert result.passed is True
@@ -224,10 +225,7 @@ class TestTestCase:
         from kensa_ai.core.test_case import TestResult
 
         result = TestResult(
-            passed=True,
-            confidence=0.95,
-            details={"key": "value"},
-            response_text="test response"
+            passed=True, confidence=0.95, details={"key": "value"}, response_text="test response"
         )
 
         data = result.to_dict()
@@ -262,19 +260,16 @@ class TestConfig:
 
         config = Config()
         assert config is not None
-        assert hasattr(config, 'to_dict')
+        assert hasattr(config, "to_dict")
 
     def test_runner_config_from_dict(self):
         """Test Config can be created from dict."""
         from kensa_ai.core.runner import Config
 
-        config = Config.from_dict({
-            "output_dir": "./reports",
-            "log_level": "WARNING"
-        })
+        config = Config.from_dict({"output_dir": "./reports", "log_level": "WARNING"})
         # Check that config was created successfully
         assert config is not None
-        assert hasattr(config, 'to_dict')
+        assert hasattr(config, "to_dict")
 
 
 class TestCLI:
@@ -283,11 +278,13 @@ class TestCLI:
     def test_cli_module_imports(self):
         """Test CLI module imports correctly."""
         from kensa_ai import cli
+
         assert cli is not None
 
     def test_cli_main_function_exists(self):
         """Test CLI has main function."""
         from kensa_ai.cli import main
+
         assert callable(main)
 
 
@@ -297,11 +294,13 @@ class TestExamples:
     def test_demo_imports(self):
         """Test demo module imports."""
         from kensa_ai.examples import run_demo
+
         assert callable(run_demo)
 
     def test_integration_tests_import(self):
         """Test integration tests module imports."""
         from kensa_ai.examples import run_integration_tests
+
         assert callable(run_integration_tests)
 
     def test_mock_server_app_creation(self):

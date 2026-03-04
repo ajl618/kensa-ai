@@ -90,6 +90,7 @@ class Runner:
         # Randomize if configured
         if self.config.randomize:
             import random
+
             if self.config.seed is not None:
                 random.seed(self.config.seed)
             random.shuffle(self.tests)
@@ -121,19 +122,25 @@ class Runner:
 
             try:
                 result = await self._execute_test(test)
-                results.append({
-                    "test": test.to_dict(),
-                    "result": result.to_dict(),
-                    "status": TestStatus.PASSED.value if result.passed else TestStatus.FAILED.value,
-                })
+                results.append(
+                    {
+                        "test": test.to_dict(),
+                        "result": result.to_dict(),
+                        "status": (
+                            TestStatus.PASSED.value if result.passed else TestStatus.FAILED.value
+                        ),
+                    }
+                )
             except Exception as e:
                 self._logger.error("Test execution error", test_name=test.name, error=str(e))
-                results.append({
-                    "test": test.to_dict(),
-                    "result": None,
-                    "status": TestStatus.ERROR.value,
-                    "error": str(e),
-                })
+                results.append(
+                    {
+                        "test": test.to_dict(),
+                        "result": None,
+                        "status": TestStatus.ERROR.value,
+                        "error": str(e),
+                    }
+                )
 
             # Rate limiting
             if self.config.target.rate_limit > 0:
@@ -224,7 +231,8 @@ class Runner:
             "timestamp": self.start_time.isoformat() if self.start_time else None,
             "duration_seconds": (
                 (self.end_time - self.start_time).total_seconds()
-                if self.start_time and self.end_time else 0
+                if self.start_time and self.end_time
+                else 0
             ),
             "target": {
                 "name": self.config.target.name,
@@ -242,10 +250,14 @@ class Runner:
                 "by_category": by_category,
             },
             "results": results,
-            "evidence": {
-                "enabled": self.config.evidence_mode,
-                "hash_algorithm": self.config.evidence.hash_algorithm,
-            } if self.config.evidence_mode else None,
+            "evidence": (
+                {
+                    "enabled": self.config.evidence_mode,
+                    "hash_algorithm": self.config.evidence.hash_algorithm,
+                }
+                if self.config.evidence_mode
+                else None
+            ),
         }
 
     async def generate_reports(self) -> list[Path]:

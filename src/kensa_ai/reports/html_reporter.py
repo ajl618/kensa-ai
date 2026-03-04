@@ -13,7 +13,7 @@ class HTMLReporter:
     Generate human-readable HTML reports.
     """
 
-    HTML_TEMPLATE = '''<!DOCTYPE html>
+    HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -407,7 +407,7 @@ class HTMLReporter:
     </div>
 </body>
 </html>
-'''
+"""
 
     def __init__(self):
         """Initialize the HTML reporter."""

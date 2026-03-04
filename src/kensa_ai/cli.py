@@ -31,63 +31,47 @@ def print_banner() -> None:
 
 @click.group(invoke_without_command=True)
 @click.option(
-    "--config", "-c",
+    "--config",
+    "-c",
     type=click.Path(exists=True, path_type=Path),
     default=None,
-    help="Path to configuration file"
+    help="Path to configuration file",
 )
 @click.option(
-    "--target", "-t",
+    "--target",
+    "-t",
     type=str,
     default="openai",
-    help="Target connector type (openai, anthropic, http, local)"
+    help="Target connector type (openai, anthropic, http, local)",
+)
+@click.option("--pack", "-p", type=str, default="basic_security", help="Test pack to run")
+@click.option(
+    "--categories", type=str, default=None, help="Comma-separated list of test categories"
 )
 @click.option(
-    "--pack", "-p",
-    type=str,
-    default="basic_security",
-    help="Test pack to run"
-)
-@click.option(
-    "--categories",
-    type=str,
-    default=None,
-    help="Comma-separated list of test categories"
-)
-@click.option(
-    "--output", "-o",
+    "--output",
+    "-o",
     type=click.Path(path_type=Path),
     default=Path("reports"),
-    help="Output directory for reports"
+    help="Output directory for reports",
 )
 @click.option(
-    "--format", "-f",
-    type=str,
-    default="json,html",
-    help="Output formats (json, html, or both)"
+    "--format", "-f", type=str, default="json,html", help="Output formats (json, html, or both)"
 )
 @click.option(
     "--evidence-mode/--no-evidence-mode",
     default=False,
-    help="Enable evidence mode for audit trails"
+    help="Enable evidence mode for audit trails",
 )
 @click.option(
     "--fail-on",
     type=click.Choice(["critical", "high", "medium", "low", "none"]),
     default="critical",
-    help="Fail with exit code 1 if issues at this severity or above are found"
+    help="Fail with exit code 1 if issues at this severity or above are found",
 )
+@click.option("--verbose", "-v", is_flag=True, default=False, help="Enable verbose output")
 @click.option(
-    "--verbose", "-v",
-    is_flag=True,
-    default=False,
-    help="Enable verbose output"
-)
-@click.option(
-    "--dry-run",
-    is_flag=True,
-    default=False,
-    help="Show what would be tested without executing"
+    "--dry-run", is_flag=True, default=False, help="Show what would be tested without executing"
 )
 @click.version_option(version=__version__)
 @click.pass_context
@@ -165,6 +149,7 @@ def main(
         console.print(f"\n[red]Error: {e}[/red]")
         if verbose:
             import traceback
+
             console.print(traceback.format_exc())
         return 1
 
@@ -228,7 +213,7 @@ def print_summary(results: dict) -> None:
                     "critical": "red",
                     "high": "orange1",
                     "medium": "yellow",
-                    "low": "blue"
+                    "low": "blue",
                 }.get(sev, "white")
                 console.print(f"    [{color}]{sev.upper()}: {count}[/{color}]")
     console.print()

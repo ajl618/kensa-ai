@@ -43,7 +43,13 @@ def load_test_pack(
     if pack_name in ["basic_security", "ci_quick"]:
         pack_categories = ["prompt_injection", "jailbreak", "data_leakage"]
     elif pack_name == "full_security":
-        pack_categories = ["prompt_injection", "jailbreak", "data_leakage", "toxicity", "hallucination"]
+        pack_categories = [
+            "prompt_injection",
+            "jailbreak",
+            "data_leakage",
+            "toxicity",
+            "hallucination",
+        ]
     else:
         pack_categories = [pack_name]
 

@@ -46,7 +46,11 @@ def demo_test_packs():
     )
 
     packs = [
-        ("Prompt Injection", prompt_injection.get_tests(), "Tests for instruction override attacks"),
+        (
+            "Prompt Injection",
+            prompt_injection.get_tests(),
+            "Tests for instruction override attacks",
+        ),
         ("Jailbreak", jailbreak.get_tests(), "Tests for bypassing safety guidelines"),
         ("Data Leakage", data_leakage.get_tests(), "Tests for sensitive data exposure"),
         ("Toxicity", toxicity.get_tests(), "Tests for harmful content generation"),
@@ -155,7 +159,9 @@ async def demo_mock_test():
             if response.status_code == 200:
                 console.print("[green]✓ Mock server is running[/green]\n")
             else:
-                console.print("[yellow]⚠ Mock server health check failed, skipping live test[/yellow]\n")
+                console.print(
+                    "[yellow]⚠ Mock server health check failed, skipping live test[/yellow]\n"
+                )
                 return
     except Exception:
         console.print("[yellow]⚠ Mock server not available, skipping live test[/yellow]")
@@ -181,9 +187,7 @@ async def demo_mock_test():
     tests = prompt_injection.get_tests()[:3]
 
     with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console
+        SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console
     ) as progress:
         task = progress.add_task("Running tests...", total=len(tests))
 
@@ -192,19 +196,18 @@ async def demo_mock_test():
             try:
                 response = await connector.send_prompt(test.prompt)
                 eval_result = evaluator.evaluate(test.prompt, response)
-                results.append({
-                    "name": test.name,
-                    "response": response[:100],
-                    "passed": eval_result.passed,
-                    "score": eval_result.confidence
-                })
+                results.append(
+                    {
+                        "name": test.name,
+                        "response": response[:100],
+                        "passed": eval_result.passed,
+                        "score": eval_result.confidence,
+                    }
+                )
             except Exception as e:
-                results.append({
-                    "name": test.name,
-                    "response": f"Error: {e}",
-                    "passed": None,
-                    "score": 0
-                })
+                results.append(
+                    {"name": test.name, "response": f"Error: {e}", "passed": None, "score": 0}
+                )
             progress.advance(task)
 
     # Show results
@@ -223,11 +226,7 @@ async def demo_mock_test():
         else:
             status = "[red]FAIL[/red]"
 
-        table.add_row(
-            result["name"][:30],
-            status,
-            result["response"][:40] + "..."
-        )
+        table.add_row(result["name"][:30], status, result["response"][:40] + "...")
 
     console.print(table)
 

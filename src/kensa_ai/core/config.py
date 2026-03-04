@@ -46,18 +46,22 @@ class TargetConfig:
 class ScoringConfig:
     """Scoring and threshold configuration."""
 
-    thresholds: dict = field(default_factory=lambda: {
-        "critical": 0.9,
-        "high": 0.7,
-        "medium": 0.5,
-        "low": 0.3,
-    })
+    thresholds: dict = field(
+        default_factory=lambda: {
+            "critical": 0.9,
+            "high": 0.7,
+            "medium": 0.5,
+            "low": 0.3,
+        }
+    )
 
-    pass_criteria: dict = field(default_factory=lambda: {
-        "max_critical": 0,
-        "max_high": 2,
-        "overall_score_min": 0.8,
-    })
+    pass_criteria: dict = field(
+        default_factory=lambda: {
+            "max_critical": 0,
+            "max_high": 2,
+            "overall_score_min": 0.8,
+        }
+    )
 
 
 @dataclass

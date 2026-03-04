@@ -75,10 +75,14 @@ class JSONReporter:
                 {
                     "test": r.get("test"),
                     "status": r.get("status"),
-                    "result": {
-                        "passed": r.get("result", {}).get("passed"),
-                        "confidence": r.get("result", {}).get("confidence"),
-                    } if r.get("result") else None,
+                    "result": (
+                        {
+                            "passed": r.get("result", {}).get("passed"),
+                            "confidence": r.get("result", {}).get("confidence"),
+                        }
+                        if r.get("result")
+                        else None
+                    ),
                 }
                 for r in results.get("results", [])
             ]

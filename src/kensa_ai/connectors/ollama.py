@@ -55,8 +55,8 @@ class OllamaConnector(BaseConnector):
                 json={
                     "model": self.model,
                     "messages": [{"role": "user", "content": prompt}],
-                    "stream": False
-                }
+                    "stream": False,
+                },
             )
             response.raise_for_status()
             data = response.json()
@@ -99,7 +99,7 @@ class OllamaConnector(BaseConnector):
                 self.logger.warning(
                     "Model not found, will be pulled on first request",
                     requested_model=self.model,
-                    available_models=models
+                    available_models=models,
                 )
                 return True  # Connection is valid, model just needs to be pulled
 
@@ -120,7 +120,7 @@ class OllamaConnector(BaseConnector):
             response = await self.client.post(
                 f"{self.base_url}/api/pull",
                 json={"name": self.model},
-                timeout=600  # 10 minutes for model download
+                timeout=600,  # 10 minutes for model download
             )
             response.raise_for_status()
             self.logger.info("Model pulled successfully", model=self.model)

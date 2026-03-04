@@ -28,8 +28,7 @@ class IntegrationTestRunner:
 
     def __init__(self):
         self.target_url = os.environ.get(
-            "TARGET_URL",
-            "http://mock-server:8080/v1/chat/completions"
+            "TARGET_URL", "http://mock-server:8080/v1/chat/completions"
         )
         self.api_key = os.environ.get("TARGET_API_KEY", "mock-api-key")
         self.results = []
@@ -49,12 +48,14 @@ class IntegrationTestRunner:
 
     def record(self, name: str, passed: bool, message: str = ""):
         """Record a test result."""
-        self.results.append({
-            "name": name,
-            "passed": passed,
-            "message": message,
-            "timestamp": datetime.now().isoformat()
-        })
+        self.results.append(
+            {
+                "name": name,
+                "passed": passed,
+                "message": message,
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
 
         status = "[green]PASS[/green]" if passed else "[red]FAIL[/red]"
         console.print(f"  {status} {name}")
@@ -81,8 +82,9 @@ class IntegrationTestRunner:
 
             # Validate
             is_valid = await connector.validate()
-            self.record("HTTP Connector validates", is_valid,
-                       "" if is_valid else "Validation failed")
+            self.record(
+                "HTTP Connector validates", is_valid, "" if is_valid else "Validation failed"
+            )
 
         except Exception as e:
             self.record("Connector initialization", False, str(e))
@@ -105,8 +107,7 @@ class IntegrationTestRunner:
 
             response = await connector.send_prompt("Hello, how are you?")
             self.record("Send prompt", True)
-            self.record("Response received", len(response) > 0,
-                       f"Response length: {len(response)}")
+            self.record("Response received", len(response) > 0, f"Response length: {len(response)}")
 
         except Exception as e:
             self.record("Basic prompt", False, str(e))
@@ -136,7 +137,7 @@ class IntegrationTestRunner:
 
             # Check evaluation was executed
             self.record("Injection prompt sent", True)
-            self.record("Evaluator executed", hasattr(result, 'passed'))
+            self.record("Evaluator executed", hasattr(result, "passed"))
 
         except Exception as e:
             self.record("Injection detection", False, str(e))
@@ -163,8 +164,7 @@ class IntegrationTestRunner:
             ]
 
             for name, tests in packs:
-                self.record(f"Load {name}", len(tests) > 0,
-                           f"Loaded {len(tests)} tests")
+                self.record(f"Load {name}", len(tests) > 0, f"Loaded {len(tests)} tests")
 
         except Exception as e:
             self.record("Test pack loading", False, str(e))
@@ -182,12 +182,12 @@ class IntegrationTestRunner:
             # Regex Evaluator - signature is evaluate(prompt, response)
             regex_eval = RegexEvaluator()
             result = regex_eval.evaluate("test prompt", "this is a test response")
-            self.record("RegexEvaluator", hasattr(result, 'passed'))
+            self.record("RegexEvaluator", hasattr(result, "passed"))
 
             # Classifier Evaluator
             classifier_eval = ClassifierEvaluator()
             result = classifier_eval.evaluate("test prompt", "this is bad harmful content")
-            self.record("ClassifierEvaluator", hasattr(result, 'passed'))
+            self.record("ClassifierEvaluator", hasattr(result, "passed"))
 
         except Exception as e:
             self.record("Evaluator tests", False, str(e))
@@ -206,10 +206,7 @@ class IntegrationTestRunner:
                 "run_id": "test-run-001-abcdef",
                 "timestamp": datetime.now().isoformat(),
                 "duration_seconds": 1.5,
-                "target": {
-                    "name": "test-model",
-                    "model": "gpt-test"
-                },
+                "target": {"name": "test-model", "model": "gpt-test"},
                 "results": [
                     {
                         "status": "passed",
@@ -217,15 +214,11 @@ class IntegrationTestRunner:
                             "name": "test-injection-1",
                             "category": "injection",
                             "severity": "high",
-                            "description": "Test prompt injection"
+                            "description": "Test prompt injection",
                         },
-                        "result": {
-                            "passed": True,
-                            "confidence": 0.95,
-                            "risk_indicators": []
-                        },
+                        "result": {"passed": True, "confidence": 0.95, "risk_indicators": []},
                         "response_text": "test response",
-                        "execution_time_ms": 100.0
+                        "execution_time_ms": 100.0,
                     }
                 ],
                 "summary": {
@@ -235,14 +228,10 @@ class IntegrationTestRunner:
                     "failed": 0,
                     "pass_rate": 100.0,
                     "score": 1.0,
-                    "by_severity": {
-                        "high": 0,
-                        "medium": 0,
-                        "low": 0
-                    },
-                    "by_category": {}
+                    "by_severity": {"high": 0, "medium": 0, "low": 0},
+                    "by_category": {},
                 },
-                "category_stats": []
+                "category_stats": [],
             }
 
             with tempfile.TemporaryDirectory() as tmpdir:
@@ -298,12 +287,13 @@ class IntegrationTestRunner:
                     confidence=eval_result.confidence,
                     details={"test_name": test.name, "category": test.category},
                     response_text=response,
-                    execution_time_ms=0.0
+                    execution_time_ms=0.0,
                 )
                 results.append(result)
 
-            self.record("Pipeline executed", len(results) == len(tests),
-                       f"Executed {len(results)} tests")
+            self.record(
+                "Pipeline executed", len(results) == len(tests), f"Executed {len(results)} tests"
+            )
             self.record("Results collected", all(r.response_text for r in results))
 
         except Exception as e:

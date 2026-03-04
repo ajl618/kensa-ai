@@ -2,7 +2,6 @@
 Tests for test packs.
 """
 
-
 from kensa_ai.core.test_case import PromptBasedTest, Severity, TestCase
 from kensa_ai.test_packs import load_category_tests, load_test_pack
 

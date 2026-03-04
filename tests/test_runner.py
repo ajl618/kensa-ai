@@ -2,7 +2,6 @@
 Tests for the runner module.
 """
 
-
 from kensa_ai.core.config import Config, TargetConfig
 from kensa_ai.core.runner import Runner
 

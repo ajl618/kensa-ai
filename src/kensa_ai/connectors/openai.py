@@ -54,15 +54,19 @@ class OpenAIConnector(BaseConnector):
         messages = []
 
         if system_prompt:
-            messages.append({
-                "role": "system",
-                "content": system_prompt,
-            })
+            messages.append(
+                {
+                    "role": "system",
+                    "content": system_prompt,
+                }
+            )
 
-        messages.append({
-            "role": "user",
-            "content": prompt,
-        })
+        messages.append(
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        )
 
         payload = {
             "model": kwargs.get("model", self.model),

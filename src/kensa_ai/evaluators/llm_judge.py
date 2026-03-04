@@ -2,7 +2,6 @@
 LLM-as-judge evaluator for Kensa-AI.
 """
 
-
 from kensa_ai.evaluators.base import BaseEvaluator, EvaluationResult
 
 
@@ -154,7 +153,7 @@ Respond with a JSON object:
                 confidence=0.3,
                 matched_patterns=[],
                 risk_indicators=["Failed to parse LLM judge response"],
-                details={"raw_response": judge_response if 'judge_response' in locals() else ""},
+                details={"raw_response": judge_response if "judge_response" in locals() else ""},
             )
         except Exception as e:
             return EvaluationResult(

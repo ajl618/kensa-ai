@@ -2,7 +2,6 @@
 Tests for the evaluators module.
 """
 
-
 from kensa_ai.evaluators import ClassifierEvaluator, RegexEvaluator
 from kensa_ai.evaluators.base import EvaluationResult
 
