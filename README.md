@@ -268,6 +268,8 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 This tool is for **defensive security testing** of AI systems you own or are authorized to test. Do not use against systems without proper authorization.
 
+> **Note:** Kensa-AI is an independent open-source project. It is not affiliated with, endorsed by, or connected to any company, product, or service of a similar name.
+
 ---
 
 <p align="center">
