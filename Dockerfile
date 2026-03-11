@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
+# Upgrade pip, setuptools, wheel to fix CVEs (wheel >=0.46.0, setuptools >=80.0)
+RUN pip install --no-cache-dir --upgrade pip setuptools>=82.0.0 wheel>=0.46.3
+
 # Copy requirements first for caching
 COPY requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
@@ -25,8 +28,8 @@ LABEL maintainer="Kensa-AI Lab"
 LABEL description="Open-source red teaming toolkit for AI systems"
 LABEL version="0.1.0"
 
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install runtime dependencies + apply security patches (glibc CVE fixes)
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
@@ -37,6 +40,14 @@ WORKDIR /app
 
 # Copy installed packages from builder
 COPY --from=builder /root/.local /home/redteam/.local
+
+# Remove setuptools/wheel from runtime (not needed, fixes Trivy CVEs)
+RUN pip install --no-cache-dir --upgrade pip setuptools>=82.0.0 wheel>=0.46.3 && \
+    rm -rf /usr/local/lib/python3.11/site-packages/setuptools/_vendor/jaraco* && \
+    rm -rf /usr/local/lib/python3.11/site-packages/setuptools/_vendor/wheel* && \
+    rm -rf /usr/local/lib/python3.11/site-packages/wheel-0.45* && \
+    find /home/redteam/.local -name 'wheel-0.45*' -delete && \
+    pip uninstall -y virtualenv pre-commit 2>/dev/null || true
 
 # Copy application code
 COPY --chown=redteam:redteam . .
