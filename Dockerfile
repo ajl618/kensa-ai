@@ -59,7 +59,7 @@ USER redteam
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import ai_redteam_tester; print('OK')" || exit 1
+    CMD python -c "import kensa_ai; print('OK')" || exit 1
 
 # Default entrypoint
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

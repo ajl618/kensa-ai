@@ -81,7 +81,7 @@ jobs:
       
       - name: Run tests
         run: |
-          pytest tests/ -v --cov=ai_redteam_tester --cov-report=xml
+          pytest tests/ -v --cov=kensa_ai --cov-report=xml
       
       - name: Upload coverage
         uses: codecov/codecov-action@v4
@@ -114,7 +114,7 @@ jobs:
           TARGET_URL: https://api.openai.com/v1
           TARGET_MODEL: gpt-4
         run: |
-          python -m ai_redteam_tester \
+          python -m kensa_ai \
             --config configs/default.yaml \
             --pack ${{ inputs.test_pack || 'basic_security' }} \
             --fail-on ${{ inputs.fail_on || 'critical' }} \
@@ -158,6 +158,6 @@ jobs:
         with:
           context: .
           push: false
-          tags: ai-redteam-tester:latest
+          tags: kensa-ai:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
