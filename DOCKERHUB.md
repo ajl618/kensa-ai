@@ -44,6 +44,8 @@ docker run --rm \
 ## Tags
 
 - `latest` - Latest stable release
+- `0.2.2` - Core reliability improvements: parallel runner, config validation, and error-aware CLI exit codes
+- `0.2.1` - Security fixes: wheel, setuptools
 - `x.y.z` - Specific version
 - `sha-xxxxx` - Git commit
 
