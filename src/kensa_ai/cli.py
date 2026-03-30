@@ -69,6 +69,17 @@ def print_banner() -> None:
     default="critical",
     help="Fail with exit code 1 if issues at this severity or above are found",
 )
+@click.option(
+    "--fail-on-error/--ignore-errors",
+    default=True,
+    help="Fail with exit code 1 when technical execution errors occur",
+)
+@click.option(
+    "--parallel",
+    type=click.IntRange(min=1),
+    default=1,
+    help="Number of tests to execute concurrently",
+)
 @click.option("--verbose", "-v", is_flag=True, default=False, help="Enable verbose output")
 @click.option(
     "--dry-run", is_flag=True, default=False, help="Show what would be tested without executing"
@@ -85,6 +96,8 @@ def main(
     format: str,
     evidence_mode: bool,
     fail_on: str,
+    fail_on_error: bool,
+    parallel: int,
     verbose: bool,
     dry_run: bool,
 ) -> int:
@@ -127,6 +140,8 @@ def main(
     cfg.output_formats = output_formats
     cfg.evidence_mode = evidence_mode
     cfg.fail_on = fail_on
+    cfg.fail_on_error = fail_on_error
+    cfg.parallel = parallel
     cfg.verbose = verbose
 
     if dry_run:
@@ -136,6 +151,8 @@ def main(
         console.print(f"Categories: {category_list or 'all'}")
         console.print(f"Output: {output}")
         console.print(f"Evidence Mode: {evidence_mode}")
+        console.print(f"Fail on execution errors: {fail_on_error}")
+        console.print(f"Parallel workers: {parallel}")
         return 0
 
     # Run tests
@@ -186,7 +203,7 @@ async def run_tests(config: Config, verbose: bool) -> int:
     print_summary(results)
 
     # Determine exit code
-    exit_code = determine_exit_code(results, config.fail_on)
+    exit_code = determine_exit_code(results, config.fail_on, config.fail_on_error)
 
     return exit_code
 
@@ -219,15 +236,20 @@ def print_summary(results: dict) -> None:
     console.print()
 
 
-def determine_exit_code(results: dict, fail_on: str) -> int:
+def determine_exit_code(results: dict, fail_on: str, fail_on_error: bool = True) -> int:
     """Determine exit code based on results and fail_on threshold."""
+    summary = results.get("summary", {})
+
+    if fail_on_error and summary.get("errors", 0) > 0:
+        return 1
+
     if fail_on == "none":
         return 0
 
     severity_order = ["critical", "high", "medium", "low"]
     threshold_index = severity_order.index(fail_on)
 
-    severities = results.get("summary", {}).get("by_severity", {})
+    severities = summary.get("by_severity", {})
 
     for i, sev in enumerate(severity_order):
         if i <= threshold_index and severities.get(sev, 0) > 0:

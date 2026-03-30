@@ -104,8 +104,42 @@ class Config:
 
     # Execution configuration
     fail_on: str = "critical"
+    fail_on_error: bool = True
     verbose: bool = False
     parallel: int = 1
+
+    def validate(self) -> None:
+        """Validate configuration values and raise ValueError on invalid settings."""
+        allowed_formats = {"json", "html"}
+        invalid_formats = [fmt for fmt in self.output_formats if fmt not in allowed_formats]
+
+        if invalid_formats:
+            raise ValueError(
+                f"Invalid output format(s): {invalid_formats}. Allowed: {sorted(allowed_formats)}"
+            )
+
+        if not self.output_formats:
+            raise ValueError("At least one output format must be configured")
+
+        if self.max_tests_per_category < 1:
+            raise ValueError("max_tests_per_category must be >= 1")
+
+        if self.parallel < 1:
+            raise ValueError("parallel must be >= 1")
+
+        if self.target.timeout <= 0:
+            raise ValueError("target.timeout must be > 0")
+
+        if self.target.max_retries < 0:
+            raise ValueError("target.max_retries must be >= 0")
+
+        if self.target.rate_limit < 0:
+            raise ValueError("target.rate_limit must be >= 0")
+
+        if self.fail_on not in {"critical", "high", "medium", "low", "none"}:
+            raise ValueError(
+                f"Invalid fail_on value: {self.fail_on}. Allowed: critical, high, medium, low, none"
+            )
 
     @classmethod
     def from_file(cls, path: Path) -> "Config":
@@ -159,15 +193,19 @@ class Config:
         if "execution" in data:
             exec_data = data["execution"]
             config.fail_on = exec_data.get("fail_on", "critical")
+            config.fail_on_error = exec_data.get("fail_on_error", True)
             config.verbose = exec_data.get("verbose", False)
             config.parallel = exec_data.get("parallel", 1)
 
+        config.validate()
         return config
 
     @classmethod
     def default(cls) -> "Config":
         """Create default configuration."""
-        return cls()
+        config = cls()
+        config.validate()
+        return config
 
     def to_dict(self) -> dict[str, Any]:
         """Export configuration as dictionary."""
@@ -203,6 +241,7 @@ class Config:
             },
             "execution": {
                 "fail_on": self.fail_on,
+                "fail_on_error": self.fail_on_error,
                 "verbose": self.verbose,
                 "parallel": self.parallel,
             },

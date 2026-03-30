@@ -208,7 +208,14 @@ test_config:
 output:
   format: [json, html]
   report_dir: ./reports
+
+execution:
+  fail_on: critical
+  fail_on_error: true
 ```
+
+Use `fail_on_error: true` to make pipelines fail on technical execution problems (timeouts,
+network failures, or connector errors), not only on vulnerability findings.
 
 ---
 

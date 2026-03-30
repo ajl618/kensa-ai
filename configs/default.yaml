@@ -56,5 +56,6 @@ scoring:
 # Execution configuration
 execution:
   fail_on: critical  # critical, high, medium, low, none
+  fail_on_error: true  # If true, any technical execution error returns exit code 1
   verbose: false
   parallel: 1  # Number of parallel test executions

@@ -43,11 +43,14 @@ class Runner:
         self.connector: BaseConnector | None = None
         self.tests: list[TestCase] = []
         self.results: dict[str, Any] = {}
+        self._rate_limit_lock = asyncio.Lock()
+        self._last_request_ts = 0.0
 
         self._logger = logger.bind(run_id=self.run_id)
 
     async def initialize(self) -> None:
         """Initialize the runner and connector."""
+        self.config.validate()
         self._logger.info("Initializing runner", target_type=self.config.target_type)
 
         # Initialize connector
@@ -109,42 +112,30 @@ class Runner:
         self.start_time = datetime.now(timezone.utc)
         self._logger.info("Starting test run", test_count=len(self.tests))
 
-        results: list[dict[str, Any]] = []
+        parallelism = max(1, self.config.parallel)
+        total = len(self.tests)
 
-        for i, test in enumerate(self.tests, 1):
-            self._logger.debug(
-                "Running test",
-                test_num=i,
-                total=len(self.tests),
-                test_name=test.name,
-                category=test.category,
-            )
+        if parallelism == 1:
+            indexed_results = [
+                await self._run_test_with_capture(i, test, total)
+                for i, test in enumerate(self.tests, 1)
+            ]
+        else:
+            self._logger.info("Running tests in parallel", parallelism=parallelism)
+            semaphore = asyncio.Semaphore(parallelism)
 
-            try:
-                result = await self._execute_test(test)
-                results.append(
-                    {
-                        "test": test.to_dict(),
-                        "result": result.to_dict(),
-                        "status": (
-                            TestStatus.PASSED.value if result.passed else TestStatus.FAILED.value
-                        ),
-                    }
-                )
-            except Exception as e:
-                self._logger.error("Test execution error", test_name=test.name, error=str(e))
-                results.append(
-                    {
-                        "test": test.to_dict(),
-                        "result": None,
-                        "status": TestStatus.ERROR.value,
-                        "error": str(e),
-                    }
-                )
+            async def _run_with_semaphore(index: int, test_case: TestCase) -> tuple[int, dict[str, Any]]:
+                async with semaphore:
+                    return await self._run_test_with_capture(index, test_case, total)
 
-            # Rate limiting
-            if self.config.target.rate_limit > 0:
-                await asyncio.sleep(1.0 / self.config.target.rate_limit)
+            tasks = [
+                asyncio.create_task(_run_with_semaphore(i, test))
+                for i, test in enumerate(self.tests, 1)
+            ]
+            indexed_results = await asyncio.gather(*tasks)
+
+        indexed_results.sort(key=lambda item: item[0])
+        results = [result for _, result in indexed_results]
 
         self.end_time = datetime.now(timezone.utc)
 
@@ -152,6 +143,40 @@ class Runner:
         self.results = self._build_results(results)
 
         return self.results
+
+    async def _run_test_with_capture(
+        self, index: int, test: TestCase, total: int
+    ) -> tuple[int, dict[str, Any]]:
+        """Execute one test and normalize success/error result payloads."""
+        self._logger.debug(
+            "Running test",
+            test_num=index,
+            total=total,
+            test_name=test.name,
+            category=test.category,
+        )
+
+        try:
+            result = await self._execute_test(test)
+            return (
+                index,
+                {
+                    "test": test.to_dict(),
+                    "result": result.to_dict(),
+                    "status": TestStatus.PASSED.value if result.passed else TestStatus.FAILED.value,
+                },
+            )
+        except Exception as e:
+            self._logger.error("Test execution error", test_name=test.name, error=str(e))
+            return (
+                index,
+                {
+                    "test": test.to_dict(),
+                    "result": None,
+                    "status": TestStatus.ERROR.value,
+                    "error": str(e),
+                },
+            )
 
     async def _execute_test(self, test: TestCase) -> TestResult:
         """Execute a single test case."""
@@ -163,6 +188,8 @@ class Runner:
 
         # Record evidence
         start_time = time.perf_counter()
+
+        await self._apply_rate_limit()
 
         # Send to target
         assert self.connector is not None, "Runner not initialized. Call initialize() first."
@@ -196,6 +223,22 @@ class Runner:
         test.post_execute(response)
 
         return result
+
+    async def _apply_rate_limit(self) -> None:
+        """Apply a global inter-request delay to respect configured request rate."""
+        if self.config.target.rate_limit <= 0:
+            return
+
+        min_interval = 1.0 / self.config.target.rate_limit
+
+        async with self._rate_limit_lock:
+            now = time.perf_counter()
+            elapsed = now - self._last_request_ts
+
+            if self._last_request_ts > 0 and elapsed < min_interval:
+                await asyncio.sleep(min_interval - elapsed)
+
+            self._last_request_ts = time.perf_counter()
 
     def _build_results(self, results: list[dict]) -> dict[str, Any]:
         """Build the results summary."""
