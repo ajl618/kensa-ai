@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kensa-ai"
-version = "0.1.0"
+version = "0.2.3"
 description = "検査-AI: Open-source AI red teaming toolkit with ISO/IEC 42001 alignment"
 readme = "README.md"
 license = {text = "MIT"}
