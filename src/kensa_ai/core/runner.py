@@ -124,7 +124,9 @@ class Runner:
             self._logger.info("Running tests in parallel", parallelism=parallelism)
             semaphore = asyncio.Semaphore(parallelism)
 
-            async def _run_with_semaphore(index: int, test_case: TestCase) -> tuple[int, dict[str, Any]]:
+            async def _run_with_semaphore(
+                index: int, test_case: TestCase
+            ) -> tuple[int, dict[str, Any]]:
                 async with semaphore:
                     return await self._run_test_with_capture(index, test_case, total)
 
