@@ -12,7 +12,7 @@ Kensa (検査) means "inspection" in Japanese. Test your AI models against adver
 # Run demo against built-in mock server
 docker run --rm ajjl618/kensa-ai:latest demo
 
-# Run 66 unit tests
+# Run test suite
 docker run --rm ajjl618/kensa-ai:latest test
 
 # Validate installation
@@ -77,10 +77,11 @@ docker run --rm \
 
 ## 📊 Reports
 
-Kensa-AI generates evidence-grade reports in two formats:
+Kensa-AI generates evidence-grade reports in three formats:
 
 - **JSON** — Machine-readable, CI/CD integrable, with full test metadata
 - **HTML** — Visual dashboard with charts, severity breakdowns, and per-test details
+- **CSV** — Spreadsheet-friendly export for audit, BI, and governance workflows
 
 Reports are saved to `/app/reports` inside the container. Mount a volume to access them:
 
@@ -104,10 +105,15 @@ Reports are saved to `/app/reports` inside the container. Mount a volume to acce
 
 - 🐳 Docker-first — zero local setup, runs anywhere (Alpine-based, minimal image)
 - 🧠 LLM-as-Judge — category-specific AI evaluation with retry logic and combined scoring
-- 📊 HTML + JSON reports — evidence-grade with SHA-256 hashes
+- 📈 Smart Priority — historical risk-aware prioritization from previous reports
+- ⏱️ Budget Planner — `risk_per_second` mode to maximize risk coverage under time budget
+- 🎯 Focus Mode — run only or prioritize tests that failed previously
+- 🔁 Baseline Compare — regression gating via report-to-report severity delta analysis
+- 🛑 Early Stop — configurable `max-failures` to reduce runtime and API cost
+- 📊 HTML + JSON + CSV reports — evidence-grade with SHA-256 hashes
 - 🏠 Ollama integration — test local LLMs without API keys
 - 📋 ISO/IEC 42001 & OWASP LLM Top 10 aligned
-- ✅ 94 unit tests — fully validated with black, ruff, mypy (0 errors)
+- ✅ Fully validated in CI — black, ruff, mypy, pytest
 - 🔌 4 connectors — OpenAI, Anthropic, Ollama, generic HTTP
 - 🎯 5 test packs — 100+ adversarial prompts out of the box
 - 🔒 Bandit & Trivy scanned — secure supply chain
@@ -119,6 +125,8 @@ Reports are saved to `/app/reports` inside the container. Mount a volume to acce
 | Tag | Description |
 |---|---|
 | `latest` | Most recent stable build |
+| `0.3` | Intelligent planner release: smart-priority, focus mode, baseline compare, CSV reports |
+| `0.2.3` | Python 3.11 Black compatibility and CI hardening |
 | `0.2.2` | Core reliability improvements: parallel runner, config validation, and error-aware CLI exit codes|
 | `0.2.1` | Security fixes: wheel, setuptools |
 | `0.2.0` | LLM-as-Judge evaluator with category-specific prompts |
