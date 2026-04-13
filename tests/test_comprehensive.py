@@ -250,6 +250,48 @@ class TestReports:
         reporter = HTMLReporter()
         assert reporter is not None
 
+    def test_csv_reporter_initialization(self):
+        """Test CSV reporter can be created."""
+        from kensa_ai.reports import CSVReporter
+
+        reporter = CSVReporter()
+        assert reporter is not None
+
+    def test_csv_reporter_generates_file(self, sample_results, tmp_path):
+        """Test CSV reporter writes output file with expected rows."""
+        from kensa_ai.reports import CSVReporter
+
+        sample_results_with_rows = dict(sample_results)
+        sample_results_with_rows["results"] = [
+            {
+                "test": {
+                    "id": "t1",
+                    "name": "test one",
+                    "category": "prompt_injection",
+                    "severity": "high",
+                    "tags": ["direct"],
+                },
+                "status": "failed",
+                "error": "",
+                "result": {
+                    "confidence": 0.8,
+                    "execution_time_ms": 12.5,
+                    "response_hash": "abc123",
+                    "matched_patterns": ["pattern1"],
+                    "risk_indicators": ["indicator1"],
+                },
+            }
+        ]
+
+        output_path = tmp_path / "report.csv"
+        reporter = CSVReporter()
+        generated_path = reporter.generate(sample_results_with_rows, output_path)
+
+        assert generated_path.exists()
+        content = generated_path.read_text()
+        assert "test_name" in content
+        assert "test one" in content
+
 
 class TestConfig:
     """Tests for configuration."""

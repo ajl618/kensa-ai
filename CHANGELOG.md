@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Extended demo with 38 diverse adversarial prompts
 - Ollama integration for local LLM testing
 - HTML and JSON report generation with ISO 42001 mapping
+- CLI execution controls for test sampling: `--max-per-category`, `--max-tests`, `--randomize`, and `--seed`
+- Tag-based execution filtering with `--tags` and `--exclude-tags`
+- `list-tests` detailed mode with category/tag filters and optional JSON output
+- `validate-target` now performs real connector validation with optional endpoint/model overrides
+- Severity-based filtering with `--severities` in execution and `list-tests`
+- Native CSV report export with `--format csv`
+- Baseline regression comparison via `--baseline-report` and `compare-reports` command
+- Smart baseline-guided focus execution with `--focus-failures-from` and `--focus-mode` (`prioritize`/`only`)
+- Early-stop optimization with `--max-failures` to reduce runtime and API cost
+- Intelligent historical prioritization with `--smart-priority` + `--history-report`
+- Budget-aware planner with `--planner-mode risk_per_second` and `--time-budget-seconds`
 
 ### Changed
 - Renamed project from `ai-redteam-lab` to `kensa-ai`

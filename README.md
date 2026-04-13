@@ -150,6 +150,56 @@ docker compose run --rm kensa-ai help
 docker compose run --rm kensa-ai shell  # Interactive shell
 ```
 
+### Advanced CLI options
+```bash
+# Fast smoke run: at most 2 tests per category and 10 total
+kensa-ai --pack full_security --max-per-category 2 --max-tests 10
+
+# Reproducible randomized run for CI experiments
+kensa-ai --pack full_security --randomize --seed 42
+
+# Run only specific attack styles and exclude noisy families
+kensa-ai --pack full_security --tags roleplay,encoding --exclude-tags fiction
+
+# Focus only on high-risk severities
+kensa-ai --pack full_security --severities critical,high
+
+# Preview exact runtime settings without executing tests
+kensa-ai --pack full_security --max-tests 5 --randomize --dry-run
+
+# Inspect what would run (human table or JSON)
+kensa-ai list-tests --pack full_security --categories jailbreak --tags roleplay --severities high,critical
+kensa-ai list-tests --pack full_security --tags roleplay --json-output
+
+# Export JSON + HTML + CSV in one run
+kensa-ai --pack full_security --format json,html,csv
+
+# Validate endpoint connectivity and auth before a full run
+kensa-ai validate-target --target openai --base-url https://api.openai.com/v1 --model gpt-4
+
+# Run with baseline regression gating
+kensa-ai --pack full_security --baseline-report reports/baseline.json --fail-on-regression
+
+# Smart optimization: prioritize previously failing tests first
+kensa-ai --pack full_security --focus-failures-from reports/baseline.json --focus-mode prioritize
+
+# Smart prioritization with full historical signal scoring
+kensa-ai --pack full_security --smart-priority --history-report reports/baseline.json
+
+# Budget-aware planner: maximize risk coverage under 30 seconds
+kensa-ai --pack full_security --smart-priority --history-report reports/baseline.json \
+  --planner-mode risk_per_second --time-budget-seconds 30
+
+# Ultra-fast triage: run only historically failing tests
+kensa-ai --pack full_security --focus-failures-from reports/baseline.json --focus-mode only
+
+# Stop early once risk signal is strong enough
+kensa-ai --pack full_security --max-failures 3
+
+# Compare two existing reports directly
+kensa-ai compare-reports reports/current.json reports/baseline.json
+```
+
 ---
 
 ## 📁 Project Structure
@@ -185,7 +235,7 @@ kensa-ai/
 | `TARGET_MODEL` | gpt-4 | Model name |
 | `TEST_PACK` | basic_security | Test pack to run |
 | `LOG_LEVEL` | INFO | Logging level |
-| `OUTPUT_FORMAT` | json,html | Report formats |
+| `OUTPUT_FORMAT` | json,html,csv | Report formats |
 | `OLLAMA_MODEL` | llama3.2:1b | Ollama model for local testing |
 
 ### Configuration File Example
@@ -203,15 +253,23 @@ test_config:
     - jailbreak
     - data_leakage
   max_tests_per_pack: 20
+  tags: [roleplay, encoding]
+  exclude_tags: [fiction]
+  max_tests: 50
   timeout: 60
 
 output:
-  format: [json, html]
+  format: [json, html, csv]
   report_dir: ./reports
 
 execution:
   fail_on: critical
   fail_on_error: true
+  max_failures: 3
+  focus_mode: prioritize
+  smart_priority: true
+  planner_mode: risk_per_second
+  time_budget_seconds: 30
 ```
 
 Use `fail_on_error: true` to make pipelines fail on technical execution problems (timeouts,
@@ -255,6 +313,40 @@ black src/ --check
 ```bash
 make ci  # build, test, integration
 make verify  # build, validate, test, integration
+```
+
+---
+
+## 🚀 Release and Publish
+
+Use this workflow to publish both source updates and Docker images.
+
+### 1) Commit and push to GitHub
+```bash
+git add README.md CHANGELOG.md src/ tests/
+git commit -m "feat: smart priority planner and execution optimizations"
+git push origin main
+```
+
+### 2) Build and push Docker image
+```bash
+# Login once (requires Docker Hub credentials)
+docker login
+
+# Build image
+docker build -t ajl618/kensa-ai:latest .
+
+# Optional version tag
+docker tag ajl618/kensa-ai:latest ajl618/kensa-ai:0.2.4
+
+# Push tags
+docker push ajl618/kensa-ai:latest
+docker push ajl618/kensa-ai:0.2.4
+```
+
+### 3) Verify published image
+```bash
+docker run --rm ajl618/kensa-ai:latest --help
 ```
 
 ---

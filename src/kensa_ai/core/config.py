@@ -87,7 +87,11 @@ class Config:
     # Test configuration
     test_pack: str = "basic_security"
     categories: list[str] | None = None
+    tags: list[str] | None = None
+    exclude_tags: list[str] | None = None
+    severities: list[str] | None = None
     max_tests_per_category: int = 50
+    max_tests: int | None = None
     randomize: bool = False
     seed: int | None = None
 
@@ -105,12 +109,20 @@ class Config:
     # Execution configuration
     fail_on: str = "critical"
     fail_on_error: bool = True
+    max_failures: int | None = None
+    focus_mode: str = "off"
+    focus_failed_test_names: list[str] | None = None
+    smart_priority: bool = False
+    planner_mode: str = "off"
+    time_budget_seconds: float | None = None
+    history_test_outcomes: dict[str, dict[str, Any]] | None = None
+    history_category_failure_rates: dict[str, float] | None = None
     verbose: bool = False
     parallel: int = 1
 
     def validate(self) -> None:
         """Validate configuration values and raise ValueError on invalid settings."""
-        allowed_formats = {"json", "html"}
+        allowed_formats = {"json", "html", "csv"}
         invalid_formats = [fmt for fmt in self.output_formats if fmt not in allowed_formats]
 
         if invalid_formats:
@@ -123,6 +135,24 @@ class Config:
 
         if self.max_tests_per_category < 1:
             raise ValueError("max_tests_per_category must be >= 1")
+
+        if self.max_tests is not None and self.max_tests < 1:
+            raise ValueError("max_tests must be >= 1 when provided")
+
+        if self.tags is not None and any(not tag for tag in self.tags):
+            raise ValueError("tags must not contain empty values")
+
+        if self.exclude_tags is not None and any(not tag for tag in self.exclude_tags):
+            raise ValueError("exclude_tags must not contain empty values")
+
+        if self.severities is not None:
+            allowed_severities = {"critical", "high", "medium", "low", "info"}
+            invalid_severities = [sev for sev in self.severities if sev not in allowed_severities]
+            if invalid_severities:
+                raise ValueError(
+                    "Invalid severity filter(s): "
+                    f"{invalid_severities}. Allowed: {sorted(allowed_severities)}"
+                )
 
         if self.parallel < 1:
             raise ValueError("parallel must be >= 1")
@@ -140,6 +170,27 @@ class Config:
             raise ValueError(
                 f"Invalid fail_on value: {self.fail_on}. Allowed: critical, high, medium, low, none"
             )
+
+        if self.max_failures is not None and self.max_failures < 1:
+            raise ValueError("max_failures must be >= 1 when provided")
+
+        if self.focus_mode not in {"off", "prioritize", "only"}:
+            raise ValueError("focus_mode must be one of: off, prioritize, only")
+
+        if self.planner_mode not in {"off", "risk_per_second"}:
+            raise ValueError("planner_mode must be one of: off, risk_per_second")
+
+        if self.time_budget_seconds is not None and self.time_budget_seconds <= 0:
+            raise ValueError("time_budget_seconds must be > 0 when provided")
+
+        if self.history_category_failure_rates is not None:
+            invalid_rates = [
+                rate
+                for rate in self.history_category_failure_rates.values()
+                if rate < 0.0 or rate > 1.0
+            ]
+            if invalid_rates:
+                raise ValueError("history_category_failure_rates values must be in [0.0, 1.0]")
 
     @classmethod
     def from_file(cls, path: Path) -> "Config":
@@ -165,7 +216,11 @@ class Config:
             tests_data = data["tests"]
             config.test_pack = tests_data.get("pack", "basic_security")
             config.categories = tests_data.get("categories")
+            config.tags = tests_data.get("tags")
+            config.exclude_tags = tests_data.get("exclude_tags")
+            config.severities = tests_data.get("severities")
             config.max_tests_per_category = tests_data.get("max_per_category", 50)
+            config.max_tests = tests_data.get("max_tests")
             config.randomize = tests_data.get("randomize", False)
             config.seed = tests_data.get("seed")
 
@@ -194,6 +249,11 @@ class Config:
             exec_data = data["execution"]
             config.fail_on = exec_data.get("fail_on", "critical")
             config.fail_on_error = exec_data.get("fail_on_error", True)
+            config.max_failures = exec_data.get("max_failures")
+            config.focus_mode = exec_data.get("focus_mode", "off")
+            config.smart_priority = exec_data.get("smart_priority", False)
+            config.planner_mode = exec_data.get("planner_mode", "off")
+            config.time_budget_seconds = exec_data.get("time_budget_seconds")
             config.verbose = exec_data.get("verbose", False)
             config.parallel = exec_data.get("parallel", 1)
 
@@ -221,7 +281,11 @@ class Config:
             "tests": {
                 "pack": self.test_pack,
                 "categories": self.categories,
+                "tags": self.tags,
+                "exclude_tags": self.exclude_tags,
+                "severities": self.severities,
                 "max_per_category": self.max_tests_per_category,
+                "max_tests": self.max_tests,
                 "randomize": self.randomize,
                 "seed": self.seed,
             },
@@ -242,6 +306,11 @@ class Config:
             "execution": {
                 "fail_on": self.fail_on,
                 "fail_on_error": self.fail_on_error,
+                "max_failures": self.max_failures,
+                "focus_mode": self.focus_mode,
+                "smart_priority": self.smart_priority,
+                "planner_mode": self.planner_mode,
+                "time_budget_seconds": self.time_budget_seconds,
                 "verbose": self.verbose,
                 "parallel": self.parallel,
             },
