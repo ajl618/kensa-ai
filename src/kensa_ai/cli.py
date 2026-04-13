@@ -79,7 +79,8 @@ def compare_reports_data(current: dict, baseline: dict) -> dict:
     baseline_by_severity = baseline_summary.get("by_severity", {})
 
     severity_delta = {
-        severity: int(current_by_severity.get(severity, 0)) - int(baseline_by_severity.get(severity, 0))
+        severity: int(current_by_severity.get(severity, 0))
+        - int(baseline_by_severity.get(severity, 0))
         for severity in severity_order
     }
 
@@ -163,17 +164,13 @@ def print_banner() -> None:
     default=None,
     help="Path to configuration file",
 )
-@click.option(
-    "--target", "-t", type=str, default="openai", help="Target connector type"
-)
+@click.option("--target", "-t", type=str, default="openai", help="Target connector type")
 @click.option("--pack", "-p", type=str, default="basic_security", help="Test pack to run")
 @click.option(
     "--categories", type=str, default=None, help="Comma-separated list of test categories"
 )
 @click.option("--tags", type=str, default=None, help="Comma-separated test tags to include")
-@click.option(
-    "--exclude-tags", type=str, default=None, help="Comma-separated test tags to exclude"
-)
+@click.option("--exclude-tags", type=str, default=None, help="Comma-separated test tags to exclude")
 @click.option(
     "--output",
     "-o",
@@ -609,7 +606,9 @@ def determine_exit_code(results: dict, fail_on: str, fail_on_error: bool = True)
 @click.option("--target", "-t", type=str, default=None, help="Target connector type")
 @click.option("--base-url", type=str, default=None, help="Override target base URL")
 @click.option("--model", type=str, default=None, help="Override model name")
-def validate_target(config: Path | None, target: str | None, base_url: str | None, model: str | None) -> None:
+def validate_target(
+    config: Path | None, target: str | None, base_url: str | None, model: str | None
+) -> None:
     """Validate target configuration and connectivity."""
 
     async def _validate() -> bool:
@@ -648,9 +647,7 @@ def validate_target(config: Path | None, target: str | None, base_url: str | Non
 
 @main.command()
 @click.option("--pack", "-p", type=str, default=None, help="Pack to inspect in detail")
-@click.option(
-    "--categories", type=str, default=None, help="Comma-separated categories to include"
-)
+@click.option("--categories", type=str, default=None, help="Comma-separated categories to include")
 @click.option("--tags", type=str, default=None, help="Comma-separated tags to include")
 @click.option("--exclude-tags", type=str, default=None, help="Comma-separated tags to exclude")
 @click.option(
@@ -695,7 +692,9 @@ def list_tests(
             table.add_row(name, descriptions.get(name, "Custom pack"))
 
         console.print(table)
-        console.print("\nUse [cyan]kensa-ai list-tests --pack <name>[/cyan] for detailed test listing.")
+        console.print(
+            "\nUse [cyan]kensa-ai list-tests --pack <name>[/cyan] for detailed test listing."
+        )
         return
 
     category_list = _parse_csv(categories)

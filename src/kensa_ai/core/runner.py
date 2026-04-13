@@ -95,9 +95,7 @@ class Runner:
         if self.config.tags:
             include_tags = {tag.lower() for tag in self.config.tags}
             self.tests = [
-                test
-                for test in self.tests
-                if any(tag.lower() in include_tags for tag in test.tags)
+                test for test in self.tests if any(tag.lower() in include_tags for tag in test.tags)
             ]
 
         # Exclude tests containing any excluded tag.

@@ -334,19 +334,19 @@ git push origin main
 docker login
 
 # Build image
-docker build -t ajl618/kensa-ai:latest .
+docker build -t ajjl618/kensa-ai:latest .
 
 # Optional version tag
-docker tag ajl618/kensa-ai:latest ajl618/kensa-ai:0.2.4
+docker tag ajjl618/kensa-ai:latest ajjl618/kensa-ai:0.2.4
 
 # Push tags
-docker push ajl618/kensa-ai:latest
-docker push ajl618/kensa-ai:0.2.4
+docker push ajjl618/kensa-ai:latest
+docker push ajjl618/kensa-ai:0.2.4
 ```
 
 ### 3) Verify published image
 ```bash
-docker run --rm ajl618/kensa-ai:latest --help
+docker run --rm ajjl618/kensa-ai:latest --help
 ```
 
 ---
